@@ -1,0 +1,661 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="cmm2000DAO">
+    
+    <typeAlias  alias="searchVO" type="healthclub.com.vo.SearchVO"/>
+    <typeAlias  alias="egovMap"  type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+    
+    
+     <resultMap id="selectTrainerInfo" class="java.util.HashMap">
+		<result property="trainerId" column="TRA_ID"/>
+		<result property="trainerName" column="TRA_NM"/>
+		<result property="report" column="REPORT"/>
+	 </resultMap>
+    
+        
+     <resultMap id="selectLockerInfo" class="java.util.HashMap">
+		<result property="lockerId" column="LCK_ID"/>
+		<result property="userId" column="USR_ID"/>
+		<result property="userName" column="USR_NM"/>
+		<result property="lockerEndDate" column="LCK_ED_DT"/>
+	 </resultMap>
+    
+    <!-- 유저 목록 정보 반환 -->
+    <select id="cmm2000DAO.selectUsr2000TotalCountForPT" parameterClass="searchVO" resultClass="java.lang.Integer">
+    	/* cmm2000DAO.selectUsr2000TotalCountForPT - 유저 목록 정보 반환 */
+    	<![CDATA[
+		    SELECT 
+		    		COUNT(USR.USR_ID) AS CNT
+		    FROM 
+		    	USR1000 USR
+		    WHERE 
+		    	1=1 
+		    	AND CLS_NO > 0
+		    	AND DEL_YN = 'N'
+	    ]]>
+	    
+ 		<isEqual property="searchKey" compareValue="userId">
+			<![CDATA[
+				AND USR.USR_ID LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+		
+ 		<isEqual property="searchKey" compareValue="userName">
+			<![CDATA[
+				AND USR.USR_NM LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+		
+    	<![CDATA[
+	    	AND USR.USR_ID NOT IN (
+						        	SELECT 
+						        			DISTINCT USR1.USR_ID AS USR_ID
+						        	FROM 
+						        		USR1000 USR1
+						        	LEFT JOIN 
+						        		PCS1000 PCS 
+						        	ON 
+						        		PCS.USR_ID = USR1.USR_ID
+						        	WHERE 
+						        		1=1 
+						        		AND CLS_NO > 0
+						        		AND PCS.PCS_STS_CD = '00'
+							        	AND PCS.PCS_DT IN (
+							        							#beforePtDate#
+							        						, 	#ptDate#
+							        						, 	#afterPtDate#
+							        					  )
+								        AND (
+								            	
+								            	#startTime#
+								            	BETWEEN
+									            	CASE
+									                	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								            	AND
+								            	(
+								                	CASE
+								                    	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								                	+
+								                	CASE
+								                    	WHEN PCS.PCS_CD = '01' THEN 30
+								                    	WHEN PCS.PCS_CD = '02' THEN 50
+								                	END
+								            	)
+								            	
+								            	OR
+								            	
+								            	#endTime#
+								            	BETWEEN
+									            	CASE
+									                	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								            	AND
+								            	(
+								                	CASE
+								                    	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								                	+
+								                	CASE
+								                    	WHEN PCS.PCS_CD = '01' THEN 30
+								                    	WHEN PCS.PCS_CD = '02' THEN 50
+								                	END
+								            	)
+								            )
+						          )
+    	]]>
+	</select>
+    
+    
+     <!-- 유저 목록 정보 반환 -->
+    <select id="cmm2000DAO.selectUsr1000ListForPT" parameterClass="searchVO" resultClass="egovMap">
+    	/* cmm2000DAO.selectUsr1000ListForPT - 유저 목록 정보 반환 */
+    	<![CDATA[
+		    SELECT 
+		    			USR.USR_ID AS USR_ID
+		    		,	USR.USR_NM AS USR_NM
+		    		,	USR.CLS_NO AS CLASS_NUM
+		    FROM 
+		    	USR1000 USR
+		    WHERE 
+		    	1=1 
+		    	AND CLS_NO > 0
+		    	AND DEL_YN = 'N'
+	    ]]>
+	    
+ 		<isEqual property="searchKey" compareValue="userId">
+			<![CDATA[
+				AND USR.USR_ID LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+		
+ 		<isEqual property="searchKey" compareValue="userName">
+			<![CDATA[
+				AND USR.USR_NM LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+		
+    	<![CDATA[
+	    	AND USR.USR_ID NOT IN (
+						        	SELECT 
+						        			DISTINCT USR1.USR_ID AS USR_ID
+						        	FROM 
+						        		USR1000 USR1
+						        	LEFT JOIN 
+						        		PCS1000 PCS 
+						        	ON 
+						        		PCS.USR_ID = USR1.USR_ID
+						        	WHERE 
+						        		1=1 
+						        		AND CLS_NO > 0
+						        		AND PCS.PCS_STS_CD = '00'
+							        	AND PCS.PCS_DT IN (
+							        							#beforePtDate#
+							        						, 	#ptDate#
+							        						, 	#afterPtDate#
+							        					  )
+								        AND (
+								            	#startTime#
+								            	BETWEEN
+									            	CASE
+									                	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								            	AND
+								            	(
+								                	CASE
+								                    	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								                	+
+								                	CASE
+								                    	WHEN PCS.PCS_CD = '01' THEN 30
+								                    	WHEN PCS.PCS_CD = '02' THEN 50
+								                	END
+								            	)
+								            	
+								            	OR
+								            	
+								            	#endTime#
+								            	BETWEEN
+									            	CASE
+									                	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								            	AND
+								            	(
+								                	CASE
+								                    	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								                	+
+								                	CASE
+								                    	WHEN PCS.PCS_CD = '01' THEN 30
+								                    	WHEN PCS.PCS_CD = '02' THEN 50
+								                	END
+								            	)
+								            )
+						          )
+		    OFFSET #offsetStart# ROWS FETCH NEXT #recordSize# ROWS ONLY
+    	]]>
+	</select>
+    
+    
+    <!-- 트레이너 목록 정보 반환 -->
+    <select id="cmm2000DAO.selectTra1000TrainerTotalCountForPT" parameterClass="searchVO" resultClass="java.lang.Integer">
+    	/* cmm2000DAO.selectTra1000TrainerTotalCountForPT - 트레이너 목록 정보 반환 */
+    	<![CDATA[
+		    SELECT 
+		    	COUNT(TRA.TRA_ID) AS CNT
+		    FROM 
+		    	TRA1000 TRA
+		    WHERE 1=1 
+		    	AND TRA.DEL_YN = 'N'
+		    	AND TRA.ADM_YN = 'N'
+	    ]]>
+ 		<isEqual property="searchKey" compareValue="trainerId">
+			<![CDATA[
+				AND TRA.TRA_ID LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+		
+ 		<isEqual property="searchKey" compareValue="trainerName">
+ 			<![CDATA[
+				AND TRA.TRA_NM LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+	    	<![CDATA[
+	    		AND (
+	  					(
+	  					#startTime# BETWEEN (  (TO_NUMBER(SUBSTR(TRA.WK_ST_TM, 1, instr(TRA.WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(TRA.WK_ST_TM, instr(TRA.WK_ST_TM, ':') +1))               )
+	       							AND     (  (TO_NUMBER(SUBSTR(TRA.WK_ST_TM, 1, instr(TRA.WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(TRA.WK_ST_TM, instr(TRA.WK_ST_TM, ':') +1)) + 60 * WK_TM  )
+	        			AND
+	        			#endTime#	BETWEEN (  (TO_NUMBER(SUBSTR(TRA.WK_ST_TM, 1, instr(TRA.WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(TRA.WK_ST_TM, instr(TRA.WK_ST_TM, ':') +1))               )
+	       							AND     (  (TO_NUMBER(SUBSTR(TRA.WK_ST_TM, 1, instr(TRA.WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(TRA.WK_ST_TM, instr(TRA.WK_ST_TM, ':') +1)) + 60 * WK_TM  )
+	      				)
+	      				OR
+	      				(
+	  					#startTime# BETWEEN ( -1440 + (TO_NUMBER(SUBSTR(TRA.WK_ST_TM, 1, instr(TRA.WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(TRA.WK_ST_TM, instr(TRA.WK_ST_TM, ':') +1))               )
+	       							AND     ( -1440 + (TO_NUMBER(SUBSTR(TRA.WK_ST_TM, 1, instr(TRA.WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(TRA.WK_ST_TM, instr(TRA.WK_ST_TM, ':') +1)) + 60 * WK_TM  )
+	        			AND
+	        			#endTime#	BETWEEN ( -1440 + (TO_NUMBER(SUBSTR(TRA.WK_ST_TM, 1, instr(TRA.WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(TRA.WK_ST_TM, instr(TRA.WK_ST_TM, ':') +1))               )
+	       							AND     ( -1440 + (TO_NUMBER(SUBSTR(TRA.WK_ST_TM, 1, instr(TRA.WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(TRA.WK_ST_TM, instr(TRA.WK_ST_TM, ':') +1)) + 60 * WK_TM  )
+	      				)
+	      			)
+		    	AND TRA_ID NOT IN (
+		        					SELECT 
+		        						DISTINCT TRA.TRA_ID AS TRA_ID
+		        					FROM 
+		        						TRA1000 TRA
+		        					LEFT JOIN
+		        						PCS1000 PCS 
+		        					ON 
+		        						PCS.TRA_ID = TRA.TRA_ID
+		        					WHERE 1=1 
+		        						  AND PCS.PCS_STS_CD = '00'
+			        					  AND PCS.PCS_DT IN (#beforePtDate#, #ptDate#, #afterPtDate#)
+				        				  AND (
+								            	#startTime#
+								            	BETWEEN
+									            	CASE
+									                	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								            	AND
+								            	(
+								                	CASE
+								                    	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								                	+
+								                	CASE
+								                    	WHEN PCS.PCS_CD = '01' THEN 40
+								                    	WHEN PCS.PCS_CD = '02' THEN 60
+								                	END
+								            	)
+								            	
+								            	OR
+								            	
+								            	#endTime#
+								            	BETWEEN
+									            	CASE
+									                	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								            	AND
+								            	(
+								                	CASE
+								                    	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								                	+
+								                	CASE
+								                    	WHEN PCS.PCS_CD = '01' THEN 40
+								                    	WHEN PCS.PCS_CD = '02' THEN 60
+								                	END
+								            	)
+								            )
+			    				  )
+	    	]]>
+	</select>
+
+    
+    <!-- 트레이너 목록 정보 반환 -->
+    <select id="cmm2000DAO.selectTra1000ListForPT" parameterClass="searchVO" resultMap="selectTrainerInfo">
+    	/* cmm2000DAO.selectTra1000ListForPT - 트레이너 목록 정보 반환 */
+    	<![CDATA[
+		    SELECT 
+			    	TRA.TRA_ID AS TRA_ID
+			    ,	TRA.TRA_NM AS TRA_NM
+			    ,	( 
+				    	SELECT 
+				    		count(1) AS CNT
+				    	FROM
+				    		PCS1000 PCS 
+				    	WHERE 
+				    		1=1 
+		          			AND TRA.TRA_ID = PCS.TRA_ID 
+		                    AND PCS.PCS_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD') 
+		                    AND PCS.PCS_STS_CD = '01'
+	          		) AS REPORT
+		    FROM 
+		    	TRA1000 TRA
+		    WHERE 
+		    	1=1 
+		    	AND TRA.DEL_YN = 'N'
+		    	AND TRA.ADM_YN = 'N'
+	    ]]>
+	    
+ 		<isEqual property="searchKey" compareValue="trainerId">
+			<![CDATA[
+				AND TRA.TRA_ID LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+ 		
+ 		<isEqual property="searchKey" compareValue="trainerName">
+			<![CDATA[
+				AND TRA.TRA_NM LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+    	
+    	<![CDATA[
+	    		AND (
+	  					(
+	  					#startTime# BETWEEN (  (TO_NUMBER(SUBSTR(WK_ST_TM, 1, instr(WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(WK_ST_TM, instr(WK_ST_TM, ':') +1))               )
+	       							AND     (  (TO_NUMBER(SUBSTR(WK_ST_TM, 1, instr(WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(WK_ST_TM, instr(WK_ST_TM, ':') +1)) + 60 * WK_TM  )
+	        			AND
+	        			#endTime#	BETWEEN (  (TO_NUMBER(SUBSTR(WK_ST_TM, 1, instr(WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(WK_ST_TM, instr(WK_ST_TM, ':') +1))               )
+	       							AND     (  (TO_NUMBER(SUBSTR(WK_ST_TM, 1, instr(WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(WK_ST_TM, instr(WK_ST_TM, ':') +1)) + 60 * WK_TM  )
+	      				)
+	      				or
+	      				(
+	  					#startTime# BETWEEN ( -1440 + (TO_NUMBER(SUBSTR(WK_ST_TM, 1, instr(WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(WK_ST_TM, instr(WK_ST_TM, ':') +1))               )
+	       							AND     ( -1440 + (TO_NUMBER(SUBSTR(WK_ST_TM, 1, instr(WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(WK_ST_TM, instr(WK_ST_TM, ':') +1)) + 60 * WK_TM  )
+	        			AND
+	        			#endTime#	BETWEEN ( -1440 + (TO_NUMBER(SUBSTR(WK_ST_TM, 1, instr(WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(WK_ST_TM, instr(WK_ST_TM, ':') +1))               )
+	       							AND     ( -1440 + (TO_NUMBER(SUBSTR(WK_ST_TM, 1, instr(WK_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(WK_ST_TM, instr(WK_ST_TM, ':') +1)) + 60 * WK_TM  )
+	      				)
+	      			)
+	    	AND TRA.TRA_ID NOT IN (
+		        					SELECT 
+		        							DISTINCT TRA.TRA_ID
+		        					FROM 
+		        						TRA1000 TRA
+		        					LEFT JOIN 
+		        						PCS1000 PCS 
+		        					ON 
+		        						PCS.TRA_ID = TRA.TRA_ID
+		        					WHERE 1=1 
+		        						  AND PCS.PCS_STS_CD = '00'
+			        					  AND PCS.PCS_DT IN (#beforePtDate#, #ptDate#, #afterPtDate#)
+				        				  AND (
+								            	#startTime#
+								            	BETWEEN
+									            	CASE
+									                	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								            	AND
+								            	(
+								                	CASE
+								                    	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								                	+
+								                	CASE
+								                    	WHEN PCS.PCS_CD = '01' THEN 40
+								                    	WHEN PCS.PCS_CD = '02' THEN 60
+								                	END
+								            	)
+								            	
+								            	OR
+								            	
+								            	#endTime#
+								            	BETWEEN
+									            	CASE
+									                	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								            	AND
+								            	(
+								                	CASE
+								                    	WHEN PCS.PCS_DT = #beforePtDate# THEN ( -1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1)) )
+							                			WHEN PCS.PCS_DT = #ptDate#       THEN (0 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))  )
+							                			WHEN PCS.PCS_DT = #afterPtDate#  THEN (1440 +  (TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, 1, instr(PCS.PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS.PCS_ST_TM, instr(PCS.PCS_ST_TM, ':')+1))   )
+									            	END 
+								                	+
+								                	CASE
+								                    	WHEN PCS.PCS_CD = '01' THEN 40
+								                    	WHEN PCS.PCS_CD = '02' THEN 60
+								                	END
+								            	)
+								            )
+		        				  )
+		    OFFSET #offsetStart# ROWS FETCH NEXT #recordSize# ROWS ONLY
+    	]]>
+	</select>
+    
+    
+    <!-- 사물함 목록 정보 반환 -->
+    <select id="cmm2000DAO.selectLck1000LockerInfoTotalCount" parameterClass="searchVO" resultClass="java.lang.Integer">
+    	/* cmm2000DAO.selectLck1000LockerInfoTotalCount - 사물함 목록 정보 반환 */
+	    <![CDATA[
+		    SELECT
+		         COUNT(LCK.LCK_ID) AS CNT
+		    FROM 
+		    	LCK1000 LCK
+		    	LEFT OUTER JOIN 
+		    		USR1000 USR 
+		    	ON LCK.USR_ID = USR.USR_ID
+		    WHERE 1=1
+	    ]]>
+	    	<isEqual property="searchKey" compareValue="lockerId">
+				<![CDATA[
+					AND LCK.LCK_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+    </select>
+    
+    
+ 	<!-- 배정할 사물함 리스트 -->
+	<select id="cmm2000DAO.selectLck1000LockerInfoList" parameterClass="searchVO" resultMap="selectLockerInfo">
+	 	/* cmm2000DAO.selectLck1000LockerInfoList - 배정할 사물함 리스트 */
+    	<![CDATA[
+		    SELECT
+		        	LCK.LCK_ID AS LCK_ID
+			        ,	CASE
+				            WHEN USR.USR_ID IS NULL THEN '-'
+				            WHEN LCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD') THEN '-'
+			            	ELSE USR.USR_ID
+		        		END AS USR_ID
+		        	,	CASE
+				            WHEN USR.USR_NM IS NULL THEN '-'
+				            WHEN LCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD') THEN '-'
+				            ELSE USR.USR_NM
+		        		END AS USR_NM
+		        	, 	CASE
+				            WHEN LCK.LCK_ED_DT IS NULL THEN '-'
+				            WHEN LCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD') THEN '-'
+				            ELSE LCK.LCK_ED_DT
+		        		END AS LCK_ED_DT
+		    FROM 
+		    	LCK1000 LCK
+		    LEFT OUTER JOIN 
+		    	USR1000 USR 
+		    ON 
+		    	LCK.USR_ID = USR.USR_ID
+		    WHERE 1=1
+   	    ]]>
+	    	<isEqual property="searchKey" compareValue="lockerId">
+				<![CDATA[
+					AND LCK.LCK_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+		<![CDATA[
+			ORDER BY
+	        		CASE WHEN LCK_ED_DT = '-' THEN 0 ELSE 1 END
+	        	,	LCK.LCK_ED_DT
+	        	,	TO_NUMBER(LCK_ID)
+	    	OFFSET #offsetStart# ROWS FETCH NEXT #recordSize# ROWS ONLY
+    	]]>
+	</select>
+	
+	
+	
+ 	<!-- 배정할 사물함 리스트 -->
+	<select id="cmm2000DAO.selectUsr1000UserListForLockerCount" parameterClass="searchVO" resultClass="java.lang.Integer">
+		/* cmm2000DAO.selectUsr1000UserListForLockerCount - 배정할 사물함 리스트 */
+	 	<![CDATA[
+		 	SELECT 
+		 		COUNT(1) AS CNT
+	 		FROM 
+	 			USR1000 USR
+	 		LEFT OUTER JOIN 
+	 			LCK1000 LCK 
+			ON 
+				USR.USR_ID = LCK.USR_ID
+	 		WHERE 
+	 			1=1
+	 			AND USR.DEL_YN = 'N' 
+	 			AND USR.ED_DT >= TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+	  			AND (
+	 					LCK.LCK_ED_DT IS NULL
+	 					OR
+	 					LCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+	 				)
+ 		]]>
+	    	<isEqual property="searchKey" compareValue="userId">
+				<![CDATA[
+					AND USR.USR_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+	    	<isEqual property="searchKey" compareValue="userName">
+				<![CDATA[
+					AND USR.USR_NM LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+	</select>
+
+	
+ 	<!-- 배정할 회원 리스트 -->
+	<select id="cmm2000DAO.selectUsr1000UserListForLocker" parameterClass="searchVO" resultClass="egovMap">
+		/* cmm2000DAO.selectUsr1000UserListForLocker - 배정할 회원 리스트 */
+	 	<![CDATA[
+		 	SELECT 
+		 			USR.USR_ID AS USR_ID
+		 		, 	USR.USR_NM AS USR_NM
+		 		, 	USR.ED_DT AS ED_DT 
+	 		FROM 
+	 			USR1000 USR
+	 		LEFT OUTER JOIN 
+	 			LCK1000 LCK 
+	 		ON USR.USR_ID = LCK.USR_ID
+	 		WHERE 
+	 			1=1
+	 			AND USR.DEL_YN = 'N' 
+	 			AND USR.ED_DT >= TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+	 			AND (
+	 					LCK.LCK_ED_DT IS NULL
+	 					OR
+	 					LCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+	 				)
+		]]>
+	    	<isEqual property="searchKey" compareValue="userId">
+				<![CDATA[
+					AND USR.USR_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+	    	<isEqual property="searchKey" compareValue="userName">
+	    		<![CDATA[
+					AND USR.USR_NM LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<![CDATA[
+				OFFSET #offsetStart# ROWS FETCH NEXT #recordSize# ROWS ONLY
+			]]>
+	</select>
+
+
+	<!--  회원상세 정보 반환 -->
+	<select id="cmm2000DAO.selectUsr1000UserDetail" parameterClass="java.lang.String" resultClass="egovMap">
+	   	/* cmm2000DAO.selectUsr1000UserDetail - 회원상세 정보 반환  */
+	    <![CDATA[
+		    SELECT
+		        	USR.USR_ID AS USER_ID
+		        ,	USR.USR_NM AS USER_NAME
+		        ,	USR.USR_TELNO AS USER_TEL
+		        ,	USR.USR_GEN AS USER_GENDER
+		        ,	USR.USR_ADR AS USER_ADDRESS
+		        ,	USR.JOIN_DT AS USER_JOIN_DATE
+		        ,	USR.ED_DT AS USER_END_DATE
+		        ,	USR.CLS_NO AS USER_CLASS_NUM
+		        ,	USR.LCK_IS AS USER_LOCKER_ISSUE
+		        ,	USR.NOTE AS USER_NOTE
+		        ,	LCK.LCK_ID AS LOCKER_ID
+		        ,	LCK.LCK_ED_DT AS LOCKER_EXPIRE
+		    FROM
+		        USR1000 USR
+		    LEFT JOIN
+		        LCK1000 LCK 
+		    ON 
+		    	USR.USR_ID = LCK.USR_ID
+		        AND LCK.LCK_ED_DT >= TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+		    WHERE
+		        USR.USR_ID = #userId#
+	    ]]>
+	</select>
+
+
+	<!--  트레이너상세 정보 반환 -->
+	<select id="cmm2000DAO.selectTra1000TrainerDetail" parameterClass="java.lang.String" resultClass="egovMap">
+	   	/* cmm2000DAO.selectTra1000TrainerDetail - 트레이너상세 정보 반환  */
+	    <![CDATA[
+		    SELECT
+		        	TRA.TRA_NM AS TRAINER_NAME
+		        ,	TRA.TRA_ID AS TRAINER_ID
+		        ,	TRA.TRA_GEN AS TRAINER_GENDER
+		        ,	TRA.TRA_TELNO AS TRAINER_TEL
+		        ,	TRA.TRA_ADR AS TRAINER_ADDRESS
+		        ,	TRA.JOIN_DT AS TRAINER_JOIN_DATE
+		        ,	TRA.WK_ST_TM AS TRAINER_WORK_START_TIME
+		        ,	TRA.WK_TM AS TRAINER_WORK_TIME
+		        ,	TRA.NOTE AS TRAINER_NOTE
+		    FROM
+		        TRA1000 TRA
+		    WHERE 
+		    	1=1
+		        AND TRA.TRA_ID = #trainerId#
+        ]]>
+	</select>
+
+ 	<!-- 피티 상세 정보 반환 -->
+	<select id="cmm2000DAO.selectPcs1000DetailUserPtInfo" resultClass="egovMap">
+	   	/* cmm2000DAO.selectPcs1000DetailUserPtInfo - 피티 목록 정보 반환 */
+	   	<![CDATA[
+	    SELECT
+	        	PCS.PCS_ID AS PT_ID
+	        ,	PCS.USR_ID AS USER_ID
+	        ,	PCS.TRA_ID AS TRAINER_ID
+	        ,	PCS.PCS_CD AS PT_CODE
+	        ,	PCS.PCS_DT AS PT_DATE
+	        ,	PCS.PCS_ST_TM AS PT_START_TIME
+	        ,	PCS.PCS_STS_CD AS PT_STATUS
+	        ,	USR.CLS_NO AS USER_PT_REMAIN_COUNT
+	    FROM 
+	    	PCS1000 PCS
+    	LEFT JOIN 
+    		USR1000 USR
+    	ON 
+    		PCS.USR_ID = USR.USR_ID 
+	    WHERE 
+	    	1=1
+	    	AND PCS.PCS_ID = #ptId#
+	    ]]>
+	</select>
+
+</sqlMap>

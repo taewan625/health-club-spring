@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="cmm1000DAO">
+    
+    
+    <typeAlias  alias="egovMap"  type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+    
+    
+    <!-- 로그인 정보 옳고 틀림 여부 확인-->
+    <select id="cmm1000DAO.selectUsr1000Tra1000AliveMemberInfo" parameterClass="java.util.Map" resultClass="egovMap">
+	    /* cmm1000DAO.selectUsr1000Tra1000AliveMemberInfo : 로그인  정보 옳고 틀림 여부 확인 */
+		<![CDATA[
+			SELECT
+					MBR.ID  AS LOGIN_ID
+				,	MBR.NM AS NAME
+				,	MBR.MEMBER_LEVEL AS MEMBER_LEVEL
+			FROM (
+					SELECT
+							USR.USR_ID AS ID
+						,	USR.USR_PW AS PW
+						,	USR.USR_NM AS NM
+						,	'user' AS MEMBER_LEVEL
+						,	USR.DEL_YN AS DEL_YN
+					FROM 
+						USR1000 USR
+					
+					UNION ALL
+					
+					SELECT
+							TRA.TRA_ID AS ID
+						,	TRA.TRA_PW AS PW
+						,	TRA.TRA_NM AS NM
+						,	CASE TRA.ADM_YN
+								WHEN 'N' THEN 'trainer'
+								WHEN 'Y' THEN 'admin'
+							END AS MEMBER_LEVEL
+						,	TRA.DEL_YN AS DEL_YN
+					FROM 
+						TRA1000 TRA
+			     ) MBR
+			WHERE 
+				1=1
+				AND MBR.DEL_YN = 'N'
+			  	AND MBR.ID = #loginId#
+			  	AND MBR.PW = #loginPw#
+	  	]]>
+    </select>
+    
+	<!-- 아이디 중복 체크 -->
+	<select id="cmm1000DAO.selectUsr1000Tra1000CheckId" resultClass="java.lang.Integer">
+		/* cmm1000DAO.selectUsr1000Tra1000CheckId : 아이디 중복 체크 */
+	    <![CDATA[
+		    SELECT
+		        	SUM(COUNT_ID) AS CNT
+		    FROM (
+			        SELECT 
+			        		COUNT(USR.USR_ID) AS COUNT_ID
+			        FROM 
+			        	USR1000 USR
+			        WHERE 
+			        	1=1
+			        	AND USR.USR_ID = #memberId#
+			        
+			        UNION All
+			        
+			        SELECT 
+			        		COUNT(TRA.TRA_ID) AS COUNT_ID
+			        FROM 
+			        	TRA1000 TRA
+			        WHERE 
+			        	1=1
+			        	AND TRA.TRA_ID = #memberId#
+		    	 )
+    	 ]]>
+    </select>
+    
+    
+   <!-- 회원 기존 비밀번호 맞는지 확인-->
+    <select id="cmm1000DAO.selectUsr1000Tra1000CheckPw" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+	    /* cmm1000DAO.selectUsr1000Tra1000CheckPw : 회원 기존 비밀번호 맞는지 확인 */
+		<![CDATA[
+			SELECT
+					count(1) as CNT
+			FROM (
+					SELECT
+							USR.USR_ID AS ID
+						,	USR.USR_PW AS PW
+					FROM 
+						USR1000 USR
+					
+					UNION ALL
+					
+					SELECT
+							TRA.TRA_ID AS ID
+						,	TRA.TRA_PW AS PW
+					FROM 
+						TRA1000 TRA
+			     ) MBR
+			WHERE 
+				1=1
+			  	AND MBR.ID = #memberId#
+			  	AND MBR.PW = #memberPw#
+	  	]]>
+    </select>
+
+    
+</sqlMap>

@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="lck1000DAO">
+	
+	
+	<typeAlias  alias="searchVO" type="healthclub.com.vo.SearchVO"/>
+    
+    
+	<resultMap id="lockerListInfo" class="java.util.HashMap">
+		<result property="lockerId" column="LCK_ID"/>
+		<result property="userId" column="USR_ID"/>
+		<result property="userName" column="USR_NM"/>
+		<result property="lockerExpire" column="LCK_ED_DT"/>
+	</resultMap>
+    
+    
+    <resultMap id="lockerInfo" class="java.util.HashMap">
+		<result property="lockerId" column="LCK_ID"/>
+		<result property="userId" column="USR_ID"/>
+		<result property="lockerExpire" column="LCK_ED_DT"/>
+	</resultMap>
+    
+    
+    <resultMap id="locker" class="java.util.HashMap">
+		<result property="lockerId" column="LCK_ID"/>
+		<result property="userId" column="USR_ID"/>
+		<result property="lockerExpire" column="LCK_ED_DT"/>
+		<result property="lockerStatus" column="STATUS"/>
+	</resultMap>
+    
+    
+    <resultMap id="emptyLocker" class="java.util.HashMap">
+		<result property="lockerId" column="LCK_ID"/>
+		<result property="userId" column="USR_ID"/>
+		<result property="lockerExpire" column="LCK_ED_DT"/>
+	</resultMap>
+    
+    
+    <resultMap id="lockerInfoWithUser" class="java.util.HashMap">
+		<result property="lockerId" column="LCK_ID"/>
+		<result property="userId" column="USR_ID"/>
+		<result property="lockerExpire" column="LCK_ED_DT"/>
+		<result property="endCode" column="STATUS"/>
+	</resultMap>
+    
+    
+    <!-- 사물함 목록 수 -->
+    <select id="lck1000DAO.selectLck1000LockerListTotalCount" parameterClass="searchVO" resultClass="java.lang.Integer">
+	    /* lck1000DAO.selectLck1000LockerListTotalCount - 사물함 목록 수 */
+	    <![CDATA[
+		    SELECT
+	            COUNT(1) AS CNT
+	        FROM LCK1000 LCK
+	        LEFT OUTER JOIN 
+	        	USR1000 USR 
+        	ON 
+        		LCK.USR_ID = USR.USR_ID
+		    WHERE 1=1
+	     ]]>
+	    	<isEqual property="searchKey" compareValue="lockerId">
+				<![CDATA[
+					AND LCK.LCK_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="userId">
+				<![CDATA[
+					AND LCK.USR_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="userName">
+				<![CDATA[
+					AND USR.USR_NM LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="useLocker">
+				<isEqual property="searchValue" compareValue="Y">
+					<![CDATA[
+						AND (
+							LCK.LCK_ED_DT IS NOT NULL
+							OR
+							TO_CHAR(SYSDATE,'YYYY-MM-DD') < LCK.LCK_ED_DT
+							) 
+					]]>
+				</isEqual>
+				<isEqual property="searchValue" compareValue="N">
+					<![CDATA[
+						AND (
+								LCK.LCK_ED_DT IS NULL 
+								OR
+								TO_CHAR(SYSDATE,'YYYY-MM-DD') > LCK.LCK_ED_DT
+							)
+					]]>
+				</isEqual>
+			</isEqual>
+
+    </select>
+    
+    
+    <!-- 사물함 목록 정보 반환 -->
+	<select id="lck1000DAO.selectLck1000LockerInfoList" parameterClass="searchVO" resultMap="lockerListInfo">
+	   	/* lck1000DAO.selectLck1000LockerInfoList - 사물함 목록 정보 반환 */
+	   <![CDATA[
+	 		SELECT
+	            	LCK.LCK_ID AS LCK_ID
+	            ,	CASE
+		                WHEN USR.USR_ID IS NULL THEN '-'
+		                WHEN LCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD') THEN '-'
+		                ELSE USR.USR_ID
+		            END AS USR_ID
+	            ,	CASE
+	                	WHEN USR.USR_NM IS NULL THEN '-'
+	                	WHEN LCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD') THEN '-'
+	                	ELSE USR.USR_NM
+	            	END AS USR_NM
+		        ,    CASE
+		                WHEN LCK.LCK_ED_DT IS NULL THEN '-'
+		                WHEN LCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD') THEN '-'
+		                ELSE LCK.LCK_ED_DT
+		            END AS LCK_ED_DT
+	        FROM 
+	        	LCK1000 LCK
+	        LEFT OUTER JOIN 
+	        	USR1000 USR 
+	        ON 
+	        	LCK.USR_ID = USR.USR_ID
+		    WHERE 1=1
+    	]]>
+    	
+	    	<isEqual property="searchKey" compareValue="lockerId">
+				<![CDATA[
+					AND LCK.LCK_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="userId">
+				<![CDATA[
+					AND LCK.USR_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="userName">
+				<![CDATA[
+					AND USR.USR_NM LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="useLocker">
+				<isEqual property="searchValue" compareValue="Y">
+					<![CDATA[
+						AND (
+							LCK.LCK_ED_DT IS NOT NULL
+							OR
+							TO_CHAR(SYSDATE,'YYYY-MM-DD') < LCK.LCK_ED_DT
+							) 
+					]]>
+				</isEqual>
+				<isEqual property="searchValue" compareValue="N">
+					<![CDATA[
+						AND (
+								LCK.LCK_ED_DT IS NULL 
+								OR
+								TO_CHAR(SYSDATE,'YYYY-MM-DD') > LCK.LCK_ED_DT
+							)
+					]]>
+				</isEqual>
+			</isEqual>
+
+			<![CDATA[
+				ORDER BY LCK.REG_DTM
+				OFFSET #offsetStart# ROWS FETCH NEXT #recordSize# ROWS ONLY
+			]]>
+	</select>
+	
+	
+	<!-- 수정할 사물함 정보 반환  -->
+	<select id="lck1000DAO.selectLck1000EditLockerInfo" parameterClass="java.lang.String" resultMap="lockerInfo">
+		/* lck1000DAO.selectLck1000EditLockerInfo - 수정할 사물함 정보 반환  */
+		<![CDATA[
+			SELECT 
+			    	LCK.LCK_ID AS LCK_ID 
+			   	,	CASE
+		                WHEN LCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD') THEN NULL
+		                ELSE LCK.USR_ID
+		            END AS USR_ID
+		        ,   CASE
+		                WHEN LCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD') THEN NULL
+		                ELSE LCK.LCK_ED_DT
+		            END AS LCK_ED_DT
+			FROM 
+				LCK1000 LCK
+			WHERE 
+				1=1 
+				AND LCK.LCK_ID = #lockerId#
+		]]>
+	</select>
+	
+	
+	<!-- 단일 사물함 정보 반환  -->
+	<select id="lck1000DAO.selectLck1000LockerInfo" parameterClass="java.lang.String" resultMap="locker">
+		/* lck1000DAO.selectLck1000LockerInfo - 단일 사물함 정보 반환  */
+		<![CDATA[
+			SELECT 
+			    	LCK.LCK_ID AS LCK_ID
+			    ,	LCK.USR_ID AS USR_ID
+			    ,	LCK.LCK_ED_DT AS LCK_ED_DT
+			    ,    CASE
+			            WHEN LCK.LCK_ED_DT IS NULL THEN 'empty'
+			            WHEN LCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD') THEN 'empty'
+			            ELSE 'used'
+			        END AS STATUS
+			FROM 
+				LCK1000 LCK
+			WHERE 
+				1=1 
+				AND LCK.LCK_ID = #lockerId#
+		]]>
+	</select>
+	
+	
+	 <!-- 사물함 이력 등록 -->
+	<insert id="lck1000DAO.insertLck1100LockerInfo" parameterClass="java.util.Map">
+		/* lck1000DAO.insertLck1100LockerInfo - 사물함 이력 등록 */
+	    <![CDATA[
+			 INSERT INTO 
+			 	LCK1100 LCK
+			  (
+			    	LCK.LCK_HIS_ID
+			    ,	LCK.LCK_ID
+			    ,	LCK.USR_ID
+			    ,	LCK.LCK_HIS_DT
+			    ,	LCK.LCK_CD
+			    ,	LCK.REG_USR_ID
+			    ,	LCK.REG_USR_IP
+			    ,	LCK.MDF_USR_ID
+			    ,	LCK.MDF_USR_IP
+			  )
+			  VALUES
+			  (
+			    	TO_CHAR(SYSDATE, 'YYYYMMDD') || LCK1100_SEQ.NEXTVAL
+			    ,	#lockerId#
+			    ,	#userId#
+			    ,	#lockerExpire#
+			    ,	#endCode#
+			    ,	#metaId#
+			    ,	#metaIp#
+			    ,	#metaId#
+			    ,	#metaIp#
+			  )
+		  ]]>
+	</insert>
+	
+		
+	 <!-- 사물함 정보 수정 -->
+	<update id="lck1000DAO.updateLck1000LockerInfo" parameterClass="java.util.Map">
+		/* lck1000DAO.updateLck1000LockerInfo - 사물함 정보 수정 */
+ 		<![CDATA[
+		  	UPDATE 
+		  		LCK1000 LCK
+		 	SET
+		    		LCK.USR_ID = #userId#
+		    	,	LCK.LCK_ED_DT = #lockerExpire#
+		    	,	LCK.MDF_USR_ID = #metaId#
+		    	,	LCK.MDF_USR_IP = #metaIp#
+		  	WHERE 
+		  		1=1
+		    	AND LCK_ID = #lockerId#
+	    ]]>
+	</update>
+	
+	
+	<!-- 비어있거나 만료된 사물함 정보 반환 -->
+	<select id="lck1000DAO.selectLck1000EmptyLocker"  resultMap="emptyLocker">
+		/* lck1000DAO.selectLck1000EmptyLocker - 비어있거나 만료된 사물함 정보 반환 */
+		<![CDATA[
+		  	SELECT 
+		  			LCK.LCK_ID AS LCK_ID
+				,	LCK.USR_ID AS USR_ID
+				,	LCK.LCK_ED_DT AS LCK_ED_DT
+		  		
+			FROM (
+				SELECT
+						ILCK.LCK_ID
+					,	ILCK.USR_ID
+					,	ILCK.LCK_ED_DT
+			    FROM 
+			    	LCK1000 ILCK
+			    WHERE 
+			    	1=1 
+			    	AND (
+			    			ILCK.LCK_ED_DT IS NULL 
+			    			OR 
+			    			ILCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'yyyy-mm-dd')
+			    		)
+			    ORDER BY 
+			    	ILCK.LCK_ED_DT DESC
+			  ) LCK
+			WHERE 
+				1=1 
+				AND ROWNUM <= 1
+		]]>
+	</select>
+
+
+	 <!-- 사물함 탈취 이력 발생 회원 사물함 탈취 정보 업데이트  -->
+	<update id="lck1000DAO.updateUsr1000LockerIssue" parameterClass="java.util.Map">
+		/* lck1000DAO.updateUsr1000LockerIssue - 사물함 탈취 이력 발생 회원 사물함 탈취 정보 업데이트 */
+ 		<![CDATA[
+	 		UPDATE 
+	 			USR1000
+	        SET 
+	        		LCK_IS = #lockerIssue#
+	            ,	MDF_DTM = DEFAULT
+	            ,	MDF_USR_ID = #metaId#
+	            ,	MDF_USR_IP = #metaIp#
+	        WHERE 
+	        	1=1
+	        	AND  USR_ID = #userId#
+        ]]>
+	</update>
+
+
+	<!-- 기존 사물함 정보 삭제  -->
+	<update id="lck1000DAO.deleteLck1000LockerInfo" parameterClass="java.util.Map">
+		/* lck1000DAO.deleteLck1000LockerInfo - 기존 사물함 정보 삭제 */
+ 		<![CDATA[
+	 		UPDATE 
+	 			LCK1000 
+	        SET 
+	        		USR_ID = NULL
+	            ,	LCK_ED_DT = NULL
+	            ,	MDF_USR_ID = #metaId#
+	            ,	MDF_USR_IP = #metaIp#
+	        WHERE 
+	        	1=1
+	        	AND USR_ID = #userId#
+       	]]>
+	</update>
+
+	
+	<!-- 회원 중 사물함 정보를 가진 회원 정보 반환-->
+	<select id="lck1000DAO.selectLck1000LockerDeleteInfo" parameterClass="java.util.List" resultMap="lockerInfoWithUser">
+	   	/* "lck1000DAO.selectLck1000LockerDeleteInfo - 회원 중 사물함 정보를 가진 사물함 정보 반환  */
+	    <![CDATA[
+	   		SELECT 
+			    	LCK.LCK_ID AS LCK_ID
+			    ,	LCK.USR_ID AS USR_ID
+			    ,	LCK.LCK_ED_DT AS LCK_ED_DT
+			    ,	'03' AS STATUS
+			FROM 
+				LCK1000 LCK
+			WHERE 
+				1=1
+				AND LCK.USR_ID IS NOT NULL
+				AND LCK.LCK_ID
+		]]>
+		
+		<iterate prepend="IN" open="(" close=")" conjunction=",">
+     		<![CDATA[
+				#[]#
+   			]]>
+		</iterate> 
+		
+	</select>
+
+
+</sqlMap>

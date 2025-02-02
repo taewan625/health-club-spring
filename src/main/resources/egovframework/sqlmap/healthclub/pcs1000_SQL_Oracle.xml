@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pcs1000DAO">
+    
+    
+	<resultMap id="ptListInfo" class="java.util.HashMap">
+		<result property="ptId" column="PCS_ID"/>
+		<result property="userId" column="USR_ID"/>
+		<result property="trainerId" column="TRA_ID"/>
+		<result property="ptStatus" column="PCS_STS_CD"/>
+		<result property="ptDate" column="PCS_DT"/>
+	</resultMap>
+    
+    
+    <resultMap id="ptDetailInfo" class="java.util.HashMap">
+		<result property="ptId" column="PCS_ID"/>
+		<result property="userId" column="USR_ID"/>
+		<result property="trainerId" column="TRA_ID"/>
+		<result property="ptCode" column="PCS_CD"/>
+		<result property="ptDate" column="PCS_DT"/>
+		<result property="ptStartTime" column="PCS_ST_TM"/>
+		<result property="ptStatus" column="PCS_STS_CD"/>
+		<result property="userPtRemainCount" column="CLS_NO"/>
+	</resultMap>
+	
+	
+    <!-- 피티 목록 정보 반환 -->
+	<select id="pcs1000DAO.selectPCS1000PtList" resultMap="ptListInfo">
+	   	/* pcs1000DAO.selectPCS1000PtList - 피티 목록 정보 반환 */
+	   	<![CDATA[
+ 			SELECT
+		        	PCS.PCS_ID AS PCS_ID
+		        ,	PCS.USR_ID AS USR_ID
+		        ,	PCS.TRA_ID AS TRA_ID
+		        ,	PCS.PCS_STS_CD AS PCS_STS_CD
+		        ,	PCS.PCS_DT AS PCS_DT
+		    FROM 
+		    	PCS1000 PCS
+			WHERE 
+			    1=1
+			    AND PCS.PCS_STS_CD IN ('00', '01', '02', '04')
+	    ]]>
+	</select>
+	
+	
+    <!-- 피티 상세 정보 반환 -->
+	<select id="pcs1000DAO.selectPcs1000DetailPtInfo" resultMap="ptDetailInfo">
+	   	/* pcs1000DAO.selectPcs1000DetailPtInfo - 피티 목록 정보 반환 */
+	   	<![CDATA[
+		    SELECT
+		        	PCS.PCS_ID AS PCS_ID
+		        ,	PCS.USR_ID AS USR_ID
+		        ,	PCS.TRA_ID AS TRA_ID
+		        ,	PCS.PCS_CD AS PCS_CD
+		        ,	PCS.PCS_DT AS PCS_DT
+		        ,	PCS.PCS_ST_TM AS PCS_ST_TM
+		        ,	PCS.PCS_STS_CD AS PCS_STS_CD
+		        ,	USR.CLS_NO AS CLS_NO
+		    FROM 
+		    	PCS1000 PCS
+	    	LEFT JOIN 
+	    		USR1000 USR
+	    	ON 
+	    		PCS.USR_ID = USR.USR_ID 
+		    WHERE 
+		    	1=1
+		    	AND PCS.PCS_ID = #ptId#
+    	]]>
+	</select>
+	
+	
+	 <!-- 수업일정 등록 -->
+	<insert id="pcs1000DAO.insertPcs1000Pt" parameterClass="java.util.Map">
+		/* pcs1000DAO.insertPcs1000Pt - 수업일정 등록 */
+	    <![CDATA[
+		 INSERT INTO PCS1000
+			  (
+					PCS_ID
+				,	USR_ID 
+				,	TRA_ID 
+				,	PCS_CD 
+				,	PCS_DT 
+				,	PCS_ST_TM
+				,	PCS_STS_CD
+				,	REG_USR_ID 
+				,	REG_USR_IP 
+				,	MDF_USR_ID 
+				,	MDF_USR_IP
+			  )
+		  VALUES
+			  (
+			  		TO_CHAR(SYSDATE, 'YYYYMMDD') || LCK1100_SEQ.NEXTVAL
+			  	,	#userId#
+			  	,	#trainerId#
+			  	,	#classType#
+			  	,	#ptDate#
+			  	,	#ptTime#
+			  	,	'00'
+			    ,	#metaId#
+			    ,	#metaIp#
+			    ,	#metaId#
+			    ,	#metaIp#
+			  )
+		  ]]>
+	</insert>
+
+
+	 <!-- 수업 관련 회원 수업 개수 변경 -->
+	<update id="pcs1000DAO.updateUsr1000UserPtCount" parameterClass="java.util.Map">
+		/* pcs1000DAO.updateUsr1000UserPtCount - 수업 관련 회원 수업 개수 변경 */
+ 		<![CDATA[
+		  	UPDATE
+		  		USR1000
+		 	SET 
+		 			CLS_NO = TO_CHAR(TO_NUMBER(CLS_NO) + TO_NUMBER(#userPtAdd#))
+		 		,	MDF_DTM = SYSDATE
+		    	,	MDF_USR_ID = #metaId#
+		    	,	MDF_USR_IP = #metaIp#
+		  	WHERE
+		  		1=1
+		    	AND USR_ID = #userId#
+	    ]]>
+	</update>
+	
+	
+	 <!-- 수업 수정 -->
+	<update id="pcs1000DAO.updatePcs1000Pt" parameterClass="java.util.Map">
+		/* pcs1000DAO.updatePcs1000Pt - 수업 수정 */
+ 		<![CDATA[
+		  	UPDATE 
+		  		PCS1000
+		 	SET 
+		 			USR_ID = COALESCE(#userId#, USR_ID)
+		 		,	TRA_ID = COALESCE(#trainerId#, TRA_ID) 
+		 		,	PCS_CD = COALESCE(#classType#, PCS_CD) 
+		 		,	PCS_DT = COALESCE(#ptDate#, PCS_DT)
+		 		,	PCS_ST_TM = COALESCE(#ptTime#, PCS_ST_TM) 
+		 		,	PCS_STS_CD = COALESCE(#ptStatus#, PCS_STS_CD) 
+		    	,	MDF_DTM = SYSDATE
+		    	,	MDF_USR_ID = #metaId#
+		    	,	MDF_USR_IP = #metaIp#
+		  	WHERE 
+		  		1=1
+		    	AND PCS_ID = #initPtId#
+    	 ]]>
+	</update>
+
+
+	 <!-- 수업 관련 트레이너 수업 수행 개수 변경 -->
+	<update id="pcs1000DAO.updateTra1000TrainerPtCount" parameterClass="java.util.Map">
+		/* pcs1000DAO.updateTra1000TrainerPtCount - 수업 관련 트레이너 수업 수행 개수 변경 */
+ 		<![CDATA[
+		  	UPDATE 
+		  		TRA1000
+		 	SET 
+		 			CLS_NO = TO_CHAR(TO_NUMBER(CLS_NO) + TO_NUMBER(#trainerPtAdd#)) 
+		 		,	MDF_DTM = SYSDATE 
+		    	,	MDF_USR_ID = #metaId#
+		    	,	MDF_USR_IP = #metaIp#
+		  	WHERE 
+		  		1=1
+		    	AND TRA_ID = #trainerId#
+	    ]]>
+	</update>
+
+
+</sqlMap>

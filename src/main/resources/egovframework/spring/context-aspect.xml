@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+	<!-- AOP 설정, 모든 Impl 파일에 적용 -->
+	<aop:config>
+		<!-- 어떤 메서드에 advice를 적용할 것인지 결정. 어드바이스 : 핵심 기능에 부가적인 동작을 수행하는 코드 -->
+		<aop:pointcut id="serviceMethod" expression="execution(* healthclub..impl.*Impl.*(..))" />
+
+		<aop:aspect ref="exceptionTransfer">
+			<!-- after-throwing    : 예외발생 후 어드바이스 "exception"이라는 예외가 발생했을 때 어드바이스가 실행,
+				 pointcut-ref      : AOP에서 어떤 메서드가 어드바이스를 적용받을지를 결정하는 일종의 필터 역할
+				 method="transfer" : 실제로 실행될 어드바이스의 메서드를 지정 , egovframework.rte.fdl.cmmn.aspect.ExceptionTransfer의 transfer 메서드가 수행 -->
+			<aop:after-throwing throwing="exception" pointcut-ref="serviceMethod" method="transfer"/>
+		</aop:aspect>
+		
+	</aop:config>
+	
+	<!-- Exception 발생시 AOP(after-throwing) 에 의해 후처리로직 연결고리 역할 수행하는 클래스 -->
+	<bean id="exceptionTransfer" class="egovframework.rte.fdl.cmmn.aspect.ExceptionTransfer">
+		<property name="exceptionHandlerService">
+			<list>
+				<ref bean="defaultExceptionHandleManager" />
+				<ref bean="otherExceptionHandleManager" />
+			</list>
+		</property>
+	</bean>
+
+
+	<!-- ExceptionTransfer에서 다루는 1.exceptionHandlerService-->
+	<bean id="defaultExceptionHandleManager" class="egovframework.rte.fdl.cmmn.exception.manager.DefaultExceptionHandleManager">
+		<!--Ant 경로 패턴 설정 적용 context-common에 bean 등록 되어있다. -->
+		<property name="reqExpMatcher">
+			<ref bean="antPathMater"/>
+		</property>
+		
+		<!-- Ant 경로 패턴 중 **service.impl.* 패턴일 경우 동작함을 의미 -->
+		<property name="patterns">
+			<list>
+				<value>**service.impl.*</value>
+			</list>
+		</property>
+		
+		<property name="handlers">
+			<list>
+				<ref bean="egovHandler"/>
+			</list>
+		</property>
+		
+	</bean>
+
+<!-- ExceptionTransfer에서 다루는 2.exceptionHandlerService-->
+	<bean id="otherExceptionHandleManager" class="egovframework.rte.fdl.cmmn.exception.manager.DefaultExceptionHandleManager">
+		<!--Ant 경로 패턴 설정 적용 context-common에 bean 등록 되어있다. -->
+		<property name="reqExpMatcher">
+			<ref bean="antPathMater"/>
+		</property>
+		
+		<!-- Ant 경로 패턴 중 **service.impl.* 패턴일 경우 동작함을 의미 -->
+		<property name="patterns">
+			<list>
+				<value>**service.impl.*</value>
+			</list>
+		</property>
+		
+		<property name="handlers">
+			<list>
+				<ref bean="otherHandler"/>
+			</list>
+		</property>
+		
+	</bean>
+
+	<!-- ExceptionHandler를 상속 받아서 실제 로그를 찍는 부분을 오버라이딩하는 예외 처리 클래스 -->
+	<bean id="egovHandler" class="egovframework.example.cmmn.EgovSampleExcepHndlr" />
+	<!-- ExceptionHandler를 상속 받아서 실제 로그를 찍는 부분을 오버라이딩하는 예외 처리 클래스 -->
+	<bean id="otherHandler" class="egovframework.example.cmmn.EgovSampleOthersExcepHndlr" />
+	
+</beans>

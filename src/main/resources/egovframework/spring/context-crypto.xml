@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Unable to locate Spring NamespaceHandler for XML schema namespace : 발생할 경우 
+	xsi:schemaLocation의  ttp://maven.egovframe.go.kr/schema/egov-crypto/egov-crypto-3.10.0.xsd version과 pom.xml의 version이 동일한지 확인 필요-->
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:egov-crypto="http://maven.egovframe.go.kr/schema/egov-crypto"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+						http://maven.egovframe.go.kr/schema/egov-crypto http://maven.egovframe.go.kr/schema/egov-crypto/egov-crypto-3.10.0.xsd">
+ 
+ 	<!-- 속성
+ 		initial : globals.properties 연계 Url, UserName, Password 값 로드 여부(true, false)		crypto : 계정 암호화 여부(true, false)
+ 		algorithm : 계정 암호화 알고리즘		algorithmKey : 계정 암호화키 키		algorithmKeyHash : 계정 암호화 키 해쉬값 		cryptoBlockSize : 계정 암호화키 블록사이즈
+ 					참고: algorithm 속성은 EgovEnvCryptoAlgorithmCreateTest.java를 통해 값을 받아옴
+ 		cryptoPropertyLocation : 설정파일 암복호화 경로 (선택 - default=“classpath:/egovframework/egovProps/globals.properties”) -->
+    <egov-crypto:config id="egovCryptoConfig" 
+    	initial="false"
+    	crypto="true"
+    	algorithm="SHA-256"
+    	algorithmKey="cryptoAccount"
+    	algorithmKeyHash="hkvYXKGEN80OO5VTcP3qvjRKDwtG0J150EJztLC6XXs="
+		cryptoBlockSize="1024"
+		cryptoPropertyLocation="classpath:/egovProps/globals.properties"
+	/>
+	
+</beans>

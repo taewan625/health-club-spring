@@ -1,0 +1,264 @@
+/* preference */
+@import "reset.css";
+@import "variable.css";
+
+
+/* 단일 페이지 */
+@import "page/info.css";
+@import "page/header.css";
+@import "page/cmm1000.css";
+
+
+/* 전체 공통 */
+input[readonly] {
+    background-color: #f2f2f2;
+}
+
+.main-title {
+	display:flex;
+	justify-content: center;
+	margin: 50px 0 15px 0;
+	font-size: 30px;
+	font-weight: bold;
+}
+
+
+
+.sub-title {
+	margin: 20px 0 5px 5px;
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+
+/* 검색 조건  */
+.search-box {
+ 	width: 1500px;
+ 	margin: 0 auto;
+	display: flex;
+	justify-content: space-between;
+	background-color: var(--dumbbel-black);
+	color: #fff;
+
+}
+
+.search-box--small {
+	width: 700px;
+}
+
+.search-box__fixed {
+	position: fixed;
+  	top: 0;
+  	left: 0;
+  	right: 0;
+}
+
+.search-box__menus {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+.search-box__menu--conditions {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+	margin-left: var(--common-left-margin);
+	
+	width: 400px;
+}
+
+.search-title {
+	margin-right: var(--common-right-margin);
+	vertical-align: middle;
+}
+
+.search-condition {	
+	margin-left: var(--common-left-margin);
+}
+
+.search-box__btns {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	margin-right: 10px;
+}
+
+.search-box__btn {
+	display: flex;
+    align-items: center;
+	padding: 0 10px;
+	height: var(--common-height);
+	cursor: pointer;
+}
+
+.search-box__btn:hover {
+	background-color: black;
+}
+
+
+/* 목록 테이블 */
+.tables-container {
+  max-width: 1500px;
+  margin: 0 auto;
+  margin-bottom: 100px;
+}
+
+.table-container {
+  max-width: 1500px;
+  margin: 0 auto;
+  display: table;
+  /*  테이블의 셀 간 경계선을 병합 */
+  border-collapse: collapse;
+  border-radius: 30px;
+  width: 100%;
+  border-radius: 5px;
+  /* 해당 요소의 내용이 자신의 영역을 벗어날 때, 넘치는 부분을 숨기도록 지정 */
+  overflow: hidden;
+}
+
+.table-header {
+  display: table-row;
+  text-align: center;
+  font-weight: bold;
+  background-color: #f2f2f2;
+}
+
+.table-row {
+  display: table-row;
+  text-align: center;
+}
+
+.table-row:hover {
+  background-color: #f2f2f2;
+  cursor: pointer;
+}
+
+.table-cell {
+  display: table-cell;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+.table-container--small {
+	max-width: 700px
+}
+
+
+/* 페이징 */
+.page-handler-box {
+	display: flex;
+	justify-content: center;
+	margin-top: 100px;
+}
+.pageHandler {
+	margin-right: 5px;
+	font-size: 18px;
+	border-bottom: 1px solid black;
+	padding: 6px;
+	text-align: center;
+}
+
+.current-page {
+	font-weight: bold;
+	border-bottom: 2px solid black;
+}
+
+.empty-data {
+	font-size: 30px;
+	display: flex;
+	justify-content: center;
+}
+
+
+/* 등록&수정 팝업  */
+.star {
+    color: rgb(238, 106, 123);
+}
+
+.save-forms {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.save-seperate-line {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    
+    margin: 15px 0;
+    width: 630px;
+    border-bottom: 2px solid black;
+    font-size: 15px;    
+}
+
+.save-form__item {
+    display: flex;
+   	align-items: center;
+    padding: 10px 20px;
+}
+
+.save-form__item-label {
+    width: 140px;
+}
+
+.save-form__item-input,
+.save-form__item-select {
+	width: 340px;
+    height: 46px;
+    padding: 0 10px;
+    border: 1px solid rgb(221, 221, 221);
+    border-radius: 4px;
+    font-weight: 400;
+    font-size: 13px;
+}
+
+.save-form__item-select {
+	width: 362px;
+}
+
+.save-form__locker--ask {
+	margin-right: 140px;
+}
+
+.popup-side-btn {
+    text-align: center;
+    margin-left: 15px;
+    padding: 0 10px;
+    height: 44px;
+    border: 1px solid rgb(221, 221, 221);
+    border-radius: 6px;
+    color: #fff;
+    background-color: var(--dumbbel-black);
+    cursor: pointer;
+}
+
+.popup-btn--save {
+    width: 200px;
+    height: 56px;
+	text-align: center;
+	margin: 50px 10px;
+    border: none;
+    border-radius: 3px;
+    color: #fff;
+    background-color: var(--dumbbel-black);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.popup-btns {
+	display: flex;
+	justify-content: center;
+}
+
+.calendar {
+	display: flex;
+	justify-content: center;
+	margin: 100px auto;
+	width: 1000px;
+    height: 600px;
+    
+}

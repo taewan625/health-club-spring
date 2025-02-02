@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sta1000DAO">
+
+
+<typeAlias  alias="egovMap"  type="egovframework.rte.psl.dataaccess.util.EgovMap"/> 
+
+
+    <!-- 새로운 회원 반환 메서드 -->
+    <select id="sta1000DAO.selectUsr1000NewUser" resultClass="egovMap">
+    	/* sta1000DAO.selectUsr1000NewUser - 새로운 회원 반환 메서드 */
+    	<![CDATA[
+			SELECT
+					USR.USR_ID AS  USER_ID
+			    ,	USR.USR_NM AS USER_NAME
+			FROM
+				USR1000 USR
+			WHERE 
+				1=1
+				AND  TO_CHAR(SYSDATE-30, 'YYYY-MM-DD') <= TO_CHAR(USR.REG_DTM, 'YYYY-MM-DD')
+			ORDER BY 
+				REG_DTM DESC
+	    ]]>
+    </select>
+    
+    
+    <!-- 임박 회원 반환 메서드 -->
+    <select id="sta1000DAO.selectUsr1000FinishUser" resultClass="egovMap">
+    	/* sta1000DAO.selectUsr1000FinishUser : 임박 회원 반환 메서드 */
+    	<![CDATA[
+			SELECT
+					USR.USR_ID AS  USER_ID
+			    ,	USR.USR_NM AS USER_NAME
+			FROM
+				USR1000 USR
+			WHERE 
+				1=1
+				AND  TO_CHAR(SYSDATE-30, 'YYYY-MM-DD') <= TO_CHAR(USR.REG_DTM, 'YYYY-MM-DD')
+				AND USR.ED_DT  BETWEEN  TO_CHAR(SYSDATE, 'YYYY-MM-DD') AND TO_CHAR(SYSDATE + 5, 'YYYY-MM-DD')
+			ORDER BY 
+				USR.ED_DT
+	    ]]>
+    </select>
+    
+
+    <!-- 종류별 pt 최대 수행한 트레이너 반환 메서드 -->
+	<select id="sta1000DAO.selectPcs1000MostTrainerPt"  parameterClass="java.lang.String" resultClass="egovMap">
+    	/* sta1000DAO.selectPcs1000MostTrainerPt : 종류별 pt 최대 수행한 트레이너 반환 메서드 */
+    	<![CDATA[
+			SELECT
+			    	PCS.TRA_ID AS TRAINER_ID
+			    ,	TRA.TRA_NM AS TRAINER_NAME
+			    ,	COUNT(1) AS PT_COUNT
+			FROM
+				PCS1000 PCS
+			LEFT JOIN 
+				TRA1000 TRA
+			ON 
+				PCS.TRA_ID = TRA.TRA_ID
+			WHERE 
+				1=1
+				AND PCS.PCS_CD = #ptCode#
+				AND PCS.PCS_STS_CD = '01'
+				AND  TO_CHAR(SYSDATE-30, 'YYYY-MM-DD') <= TO_CHAR(PCS.REG_DTM, 'YYYY-MM-DD')
+			GROUP BY
+					PCS.TRA_ID
+			    ,	TRA.TRA_NM
+			ORDER BY 
+				PT_COUNT DESC
+	    ]]>
+    </select>
+
+	
+    <!-- 종류별 pt 최대 수행한 회원 반환 메서드 -->
+	<select id="sta1000DAO.selectPcs1000MostUserPt"  parameterClass="java.lang.String" resultClass="egovMap">
+    	/* sta1000DAO.selectPcs1000MostUserPt : 종류별 pt 최대 수행한 회원 반환 메서드 */
+    	<![CDATA[
+			SELECT
+			    	PCS.USR_ID AS USER_ID
+			    ,	USR.USR_NM AS USER_NAME
+			    ,	COUNT(1) AS PT_COUNT
+			FROM
+				PCS1000 PCS
+			LEFT JOIN 
+				USR1000 USR
+			ON 
+				PCS.USR_ID = USR.USR_ID
+			WHERE 
+				1=1
+				AND PCS.PCS_CD = #ptCode#
+				AND PCS.PCS_STS_CD = '01'
+				AND TO_CHAR(SYSDATE-30, 'YYYY-MM-DD') <= TO_CHAR(PCS.REG_DTM, 'YYYY-MM-DD')
+			GROUP BY
+					PCS.USR_ID
+			    ,	USR.USR_NM
+			ORDER BY 
+				PT_COUNT DESC
+	    ]]>
+    </select>
+	
+	
+    <!-- 최근 수행된 수업 통계 반환 메서드 -->
+   	<select id="sta1000DAO.selectPcs1000MostFinishPtSchedule" resultClass="egovMap">
+    	/* sta1000DAO.selectPcs1000MostFinishPtSchedule : 최근 수행된 수업 통계 반환 메서드 */
+    	<![CDATA[
+			SELECT
+			    	PCS.PCS_ID AS PT_ID
+			    ,	PCS.PCS_CD AS PT_CODE
+			    ,	PCS.USR_ID AS USER_ID
+			    ,	PCS.TRA_ID AS TRAINER_ID
+			    ,	PCS.PCS_DT AS PT_DATE
+			    ,	PCS.PCS_ST_TM AS PT_START_TIME
+			FROM
+				PCS1000 PCS
+			WHERE 
+				1=1
+				AND  TO_CHAR(SYSDATE-30, 'YYYY-MM-DD') <= TO_CHAR(PCS.REG_DTM, 'YYYY-MM-DD')
+				AND PCS.PCS_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+			ORDER BY 
+				PT_DATE DESC
+	    ]]>
+    </select>
+</sqlMap>

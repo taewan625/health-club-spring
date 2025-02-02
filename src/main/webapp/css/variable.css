@@ -1,0 +1,12 @@
+:root {
+	--dumbbel-black: #343541;
+	--dumbbel-light-black: #383B43;
+	
+	--common-left-margin: 40px;
+	--common-right-margin: 20px;
+
+	--common-height: 42px;
+	
+	--common-left-width: 1000px;
+	--common-right-width: 800px;
+}

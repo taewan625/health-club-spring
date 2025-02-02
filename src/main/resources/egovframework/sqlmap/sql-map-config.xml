@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN" "http://www.ibatis.com/dtd/sql-map-config-2.dtd">
+
+<!-- config 명     : sql-map-config-db명-package명.xml - config 1개 당 resource 1개 존재 -->
+<!-- resource 명 : package명_SQL_db명.xml -->
+<sqlMapConfig>
+
+	<!-- "sql 매핑 파일 지정(property-mappingLocations)"을 Spring 설정 파일에 지시했어도 
+		 "sql-map-config.xml의 DTD"에  "sqlMap 태그"가 최소 1개 이상이 나타나야 하도록 규칙되어 있다.
+	 	  따라서 아래와 같이 dummy sql 매핑 파일 하나를 지정 -->
+	<sqlMap resource="egovframework/sqlmap/dummy_SQL.xml"/>
+</sqlMapConfig>

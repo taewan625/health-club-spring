@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+
+	<!-- SqlMap setup for iBATIS Database Layer : DB와 iBatis framework를 연동하는 설정 파일
+		 DB연동에 필요한 SqlMapClientFactoryBean 클래스에 대해 id가 sqlMapClient인 bean을 등록 
+		 SqlMapClientFactoryBean 클래스 : 전자정부에서 제공하는 ibatis class, iBatis 설정파일과 디비 접속 정보를 프로퍼티로 전달  -->
+		 
+	<!-- dao -> db 로 수행할 쿼리를 요청 동작 과정
+		 	1. SqlMapClientFactoryBean은 올라갈 때 창고를 만들어서 쿼리가 담긴 list를 모두 읽고 객체화 해서 보관 - 해당 factory의 쿼리를 수행하는 원재료는 datasource
+			2. 등록한 sqlmapClient bean은 전자정부에서 제공하는 EgovAbstractDAO에서 의존관계 주입을 통해서 사용 됨 (id="sqlMapClient" 라는 이름을 찾아서 DI 시킴)
+			3. dao에서 요청 시, 상속 받은 EgovAbstractDAO 메서드가 수행 -> 해당 메서드는 "sqlMapClient"에서 제공 받은 것으로 ibatis가 동작하도록 수행 
+			   -> "sqlMapClient"에 저장되어있는 객체화 된 쿼리들을 설정한 datasource에서 던져주고 원하는 상품을 받음
+ 		 
+ 		 참고. db가 하나지만 db 2개를 연결해서 서비스를 구성해야 될 경우
+			1. 등록된 다른 datasource를 원재료로 가지는 SqlMapClientFactoryBean을 설정 파일에 등록 (당연히 id="sqlMapClient" 가 아닌 다른 id로 설정)
+		 	2. EgovAbstractDAO를 상속 받는 Class를 추가 생성하여 @resource를 받는 name만 변경한 id를 넣어줘서 오버라이딩 시킴
+		 	3. DAO에서는 새로 생성한 Class를 상속받아서 다른 dao 동작을 수행함  -->
+		 	
+	<bean id="sqlMapClient" class="egovframework.rte.psl.orm.ibatis.SqlMapClientFactoryBean">
+		<!-- configLoaction   : iBatis 설정이 담겨있는 xml 파일이 위치한 경로를 잡아준다.
+		
+								"mappingLocations"를 사용하는 경우는 "configLocation" 속성이 필요하지 않지만, 
+								"configLocation" 속성이 없는 경우 SqlMapClientFactoryBean이 초기화되지 않기 때문에 “configLocation” 속성을 유지는 필요로 한다. 
+								이 때 해당 sql-map-config.xml은  dummy.xml query를 갖도록 처리 해야한다.(규칙) - sql-map-config.xml에 추가 설명 주석 작성 존재  -->
+		<property name="configLocation" value="classpath:/egovframework/sqlmap/sql-map-config.xml" />
+
+		<!-- mappingLocations : Spring 의 SqlMapClientFactoryBean 빈 설정파일에서 Spring 의 유연한 리소스 추상화를 적용하여 리소스 패턴 형태로 일괄 지정이 가능.
+								sql 매핑 파일들의 위치는 sql-map-config 설정 파일과 런타임에 merge 되도록 세팅 -->
+		<property name="mappingLocations" value="classpath:/egovframework/sqlmap/healthclub/*.xml" />
+		
+		<!-- dataSource : context-datasource.xml 파일에 있는 id가 dataSource인 bean을 참조하여 iBatis와 DB 연동 -->
+		<property name="dataSource" ref="dataSource"/>
+		
+		
+		
+		
+		<!-- 수동 설정 : 설정파일도 만들고 해당 설정 파일에서 직접 매핑되는 sql.xml과 연결을 해야한다.
+			<property name="configLocations">
+				<list>
+					<value>classpath:/egovframework/sqlmap/sql-map-config.xml</value>
+					<value>classpath:/egovframework/sqlmap/config/sql-map-config-oracle-cmm1000.xml</value>
+					<value>classpath:/egovframework/sqlmap/config/sql-map-config-oracle-cmm2000.xml</value>
+					<value>classpath:/egovframework/sqlmap/config/sql-map-config-oracle-usr1000.xml</value>
+					<value>classpath:/egovframework/sqlmap/config/sql-map-config-oracle-tra1000.xml</value>
+					<value>classpath:/egovframework/sqlmap/config/sql-map-config-oracle-pcs1000.xml</value>
+					<value>classpath:/egovframework/sqlmap/config/sql-map-config-oracle-ucs1000.xml</value>
+					<value>classpath:/egovframework/sqlmap/config/sql-map-config-oracle-sta1000.xml</value>
+					<value>classpath:/egovframework/sqlmap/config/sql-map-config-oracle-lck1000.xml</value>
+					<value>classpath:/egovframework/sqlmap/config/sql-map-config-oracle-lck1100.xml</value>
+				</list>
+			</property> -->
+	</bean>
+</beans>

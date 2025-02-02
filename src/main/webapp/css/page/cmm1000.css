@@ -1,0 +1,40 @@
+.cmm1000-form {
+	display: flex;
+	flex-direction: column;
+	margin: 0px 30px;
+}
+
+.cmm1000-form input:focus {
+	outline: none;
+}
+
+.cmm1000-form input {
+	border: none;
+	padding: 15px 0px;
+	font-size: 18px;
+	margin-bottom: 25px;
+}
+
+.cmm1000-form input {
+	border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+	transition: border-color 0.3s ease-in-out;
+}
+
+.cmm1000-form input::placeholder {
+	color: rgba(0, 0, 0, 0.4);
+}
+
+.cmm1000-form input:focus {
+	outline: none;
+	border-color: var(--dumbbel-black);
+}
+
+.cmm1000-login {
+	text-align: center;
+	background-color: var(--dumbbel-black);
+	cursor: pointer;
+	padding: 20px 0px;
+	border-radius: 5px;
+	color: #fff;
+	font-size: 25px;
+}

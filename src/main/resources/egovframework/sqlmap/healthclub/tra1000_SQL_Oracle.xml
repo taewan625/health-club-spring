@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="tra1000DAO">
+	
+	<typeAlias  alias="trainerVO" type="healthclub.tra.tra1000.tra1000.service.Tra1000VO"/>
+	<typeAlias  alias="searchVO" type="healthclub.com.vo.SearchVO"/>
+    
+    
+	<resultMap id="editTrainerInfo" class="java.util.HashMap">
+		<result property="trainerId" column="TRA_ID"/>
+		<result property="trainerName" column="TRA_NM"/>
+		<result property="trainerTel" column="TRA_TELNO"/>
+		<result property="trainerGender" column="TRA_GEN"/>
+		<result property="trainerAddress" column="TRA_ADR"/>
+		<result property="trainerJoinDT" column="JOIN_DT"/>
+		
+		<result property="trainerWorkStartTime" column="WK_ST_TM"/>
+		<result property="trainerWorkTime" column="WK_TM"/>
+		
+		<result property="trainerNote" column="NOTE"/>
+	</resultMap>
+
+
+    <!-- 트레이너 목록 수 -->
+    <select id="tra1000DAO.selectTra1000TrainerListTotalCount" parameterClass="searchVO" resultClass="java.lang.Integer">
+	    /* tra1000DAO.selectTra1000TrainerListTotalCount - 트레이너 목록 수 */
+	    <![CDATA[
+		    SELECT
+		         COUNT(TRA.TRA_ID) AS CNT
+		    FROM 
+		    	TRA1000 TRA
+		    WHERE 
+		    	1=1
+		    	AND TRA.ADM_YN = 'N'
+    	]]>
+    	
+    	<isEqual property="searchKey" compareValue="trainerId">
+			<![CDATA[
+				AND TRA.TRA_ID LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+		
+		<isEqual property="searchKey" compareValue="trainerName">
+			<![CDATA[
+				AND TRA.TRA_NM LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+		
+		<isEqual property="searchKey" compareValue="trainerPhone">
+			<![CDATA[
+				AND TRA.TRA_TELNO LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+		
+		<isEqual property="searchKey" compareValue="classNum">
+			<![CDATA[
+				AND TRA.CLS_NO = #searchValue#
+			]]>
+		</isEqual>
+		
+		<isEqual property="searchKey" compareValue="deleteCode">
+			<![CDATA[
+				AND TRA.DEL_YN = #searchValue#
+			]]>
+		</isEqual>
+		
+    </select>
+    
+    
+    <!-- 트레이너 목록 정보 반환 -->
+	<select id="tra1000DAO.selectTra1000TrainerInfoList" parameterClass="searchVO" resultClass="trainerVO">
+	   	/* tra1000DAO.selectTra1000TrainerInfoList - 트레이너 목록 정보 반환 */
+	   <![CDATA[
+		    SELECT
+		        	TRA.TRA_ID AS id
+		        ,	TRA.TRA_NM AS name
+		        ,	TRA.TRA_TELNO AS phone
+		        ,	TRA.CLS_NO AS classNumber
+		        ,	TRA.JOIN_DT AS joinDate
+		    FROM 
+		    	TRA1000 TRA
+		    WHERE 
+		    	1=1
+		    	AND TRA.ADM_YN = 'N'
+    	]]>
+    	
+	    	<isEqual property="searchKey" compareValue="trainerId">
+				<![CDATA[
+					AND TRA.TRA_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="trainerName">
+				<![CDATA[
+					AND TRA.TRA_NM LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="trainerPhone">
+				<![CDATA[
+					AND TRA.TRA_TELNO LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="classNum">
+				<![CDATA[
+					AND TRA.CLS_NO = #searchValue#
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="deleteCode">
+				<![CDATA[
+					AND TRA.DEL_YN = #searchValue#
+				]]>
+			</isEqual>
+			
+			<![CDATA[
+				ORDER BY DEL_YN, REG_DTM DESC
+				OFFSET #offsetStart# ROWS FETCH NEXT #recordSize# ROWS ONLY
+			]]>
+			
+	</select>
+	
+	
+	<!-- 수정할 트레이너 정보 반환 -->
+	<select id="tra1000DAO.selectTra1000EditTrainerInfo" parameterClass="java.lang.String" resultMap="editTrainerInfo">
+	   	/* tra1000DAO.selectTra1000EditTrainerInfo - 수정할 트레이너 정보 반환  */
+	  	<![CDATA[
+		    SELECT
+		        	TRA.TRA_ID AS TRA_ID
+		        ,	TRA.TRA_NM AS TRA_NM
+		        ,	TRA.TRA_TELNO AS TRA_TELNO
+		        ,	TRA.TRA_GEN AS TRA_GEN
+		        ,	TRA.TRA_ADR AS TRA_ADR
+		        ,	TRA.JOIN_DT AS JOIN_DT
+		        ,	TRA.WK_ST_TM AS WK_ST_TM
+		        ,	TRA.WK_TM AS WK_TM
+		        ,	TRA.NOTE AS NOTE
+		    FROM
+		        TRA1000 TRA
+		    WHERE 
+		    	1=1
+		        AND TRA.TRA_ID = #trainerId#
+		]]>
+	</select>
+	
+	
+	<!-- 트레이너 정보 등록 -->
+	<insert id="tra1000DAO.insertTra1000TrainerInfo" parameterClass="java.util.Map">
+	   	/* tra1000DAO.insertTra1000TrainerInfo - 트레이너 정보 등록  */
+	    <![CDATA[
+		    INSERT INTO TRA1000 (
+		        TRA_ID,
+		        TRA_PW,
+		        TRA_NM,
+		        TRA_GEN,
+		        TRA_TELNO,
+		        TRA_ADR,
+		        WK_ST_TM,
+		        WK_TM,
+		        JOIN_DT,
+		        NOTE,
+		        REG_USR_ID,
+		        REG_USR_IP,
+		        MDF_USR_ID,
+		        MDF_USR_IP
+		    ) 
+		    VALUES (
+		        #trainerId#,
+		        #trainerPw#,
+		        #trainerName#,
+		        #gender#,
+		        #trainerPhone#,
+		        COALESCE(#trainerAddress#, '-'),
+		        #trainerWorkStartTime#,
+		        #trainerWorkTime#,
+		        #trainerJoin#,
+		        COALESCE(#remark#, '-'),
+		        #metaId#,
+		        #metaIp#,
+		        #metaId#,
+		        #metaIp#
+		    )
+	    ]]>
+	</insert>
+	
+	
+	<!--  트레이너근무 가능 여부 정보 반환 -->
+	<select id="tra1000DAO.selectTra1000CheckWorkTime" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+	   	/* tra1000DAO.selectTra1000CheckWorkTime - 트레이너근무 가능 여부 정보 반환  */
+	    <![CDATA[
+			SELECT 
+				(TOTAL_PT - CONTAIN_PT) AS PT_GAP
+			FROM 	(
+			            SELECT COUNT(PCS_ID) AS TOTAL_PT
+			            FROM PCS1000
+			            WHERE 1=1
+			            	AND TRA_ID = #trainerId#
+			            	AND PCS_STS_CD = '00'
+			            	AND PCS_DT >= TO_CHAR(SYSDATE,'YYYY-MM-DD')
+			          )
+		          ,	(
+			            SELECT COUNT(PCS_ID) AS CONTAIN_PT
+			            FROM PCS1000
+			            WHERE 1=1
+			            	AND TRA_ID = #trainerId#
+			            	AND PCS_STS_CD = '00'
+			            	AND PCS_DT >= TO_CHAR(SYSDATE,'YYYY-MM-DD')
+			            	AND (
+				            		(
+				            			((TO_NUMBER(SUBSTR(PCS_ST_TM, 1, INSTR(PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS_ST_TM, INSTR(PCS_ST_TM, ':')+1)))
+				            			BETWEEN #workStartMinute# AND #workEndMinute#
+				            			AND
+				            			(
+							                CASE
+							                    WHEN PCS_CD = '01' THEN 30 + (TO_NUMBER(SUBSTR(PCS_ST_TM, 1, INSTR(PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS_ST_TM, INSTR(PCS_ST_TM, ':')+1))
+							                    WHEN PCS_CD = '02' THEN 50 + (TO_NUMBER(SUBSTR(PCS_ST_TM, 1, INSTR(PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS_ST_TM, INSTR(PCS_ST_TM, ':')+1))
+							                END
+						                	BETWEEN #workStartMinute# AND #workEndMinute#
+					            		)
+				            		)
+				            		OR
+				            		(
+				            			((TO_NUMBER(SUBSTR(PCS_ST_TM, 1, INSTR(PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS_ST_TM, INSTR(PCS_ST_TM, ':')+1)))
+				            			BETWEEN (#workStartMinute# - 1440) AND (#workEndMinute# - 1440)
+				            			AND
+				            			(
+							                CASE
+							                    WHEN PCS_CD = '01' THEN 30 + (TO_NUMBER(SUBSTR(PCS_ST_TM, 1, INSTR(PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS_ST_TM, INSTR(PCS_ST_TM, ':')+1))
+							                    WHEN PCS_CD = '02' THEN 50 + (TO_NUMBER(SUBSTR(PCS_ST_TM, 1, INSTR(PCS_ST_TM, ':') -1 )) * 60) + TO_NUMBER(SUBSTR(PCS_ST_TM, INSTR(PCS_ST_TM, ':')+1))
+							                END
+						                	BETWEEN (#workStartMinute# - 1440) AND (#workEndMinute# - 1440)
+					            		)
+				            		)
+			            		)
+			        )
+	    ]]>
+	</select>
+	
+	
+	<!-- 트레이너 정보 수정  -->
+	<update id="tra1000DAO.updateTra1000TrainerInfo" parameterClass="java.util.Map">
+		/* tra1000DAO.updateTra1000TrainerInfo - 트레이너 정보 수정  */
+	    <![CDATA[
+		    UPDATE TRA1000
+	        SET
+	            TRA_PW = COALESCE(#trainerPw#, TRA_PW),
+	            TRA_NM = #trainerName#,
+	            TRA_GEN = #gender#,
+	            TRA_TELNO = #trainerPhone#,
+	            TRA_ADR = COALESCE(#trainerAddress#, '-'),
+	            JOIN_DT = #trainerJoin#,
+	            WK_ST_TM = #trainerWorkStartTime#,
+	            WK_TM = #trainerWorkTime#,
+	            NOTE = COALESCE(#remark#, '-'),
+	            MDF_DTM = DEFAULT,
+	            MDF_USR_ID = #metaId#,
+	            MDF_USR_IP = #metaIp#
+	        WHERE TRA_ID = #trainerId#
+		]]>
+	</update>
+
+
+	<!-- 삭제 불가능한 트레이너 찾기 -->
+	<select id="tra1000DAO.selectTra1000HavePt" parameterClass="java.util.List" resultClass="java.lang.String">
+	   	/* tra1000DAO.selectTra1000HavePt - 삭제 불가능한 트레이너 찾기  */
+	    <![CDATA[
+		    SELECT
+		        DISTINCT TRA.TRA_ID AS TRA_ID
+		    FROM
+		        TRA1000 TRA
+		    LEFT JOIN
+	      		PCS1000 PCS
+	     	ON
+	      		PCS.TRA_ID = TRA.TRA_ID
+		    WHERE 
+		    	1=1
+		        AND TRA.TRA_ID
+        ]]>
+        
+        <iterate prepend="IN" open="(" close=")" conjunction=",">
+     				<![CDATA[
+     					#[]#
+    				]]>
+     	</iterate> 
+	        
+          AND PCS.PCS_STS_CD = '00'
+	        
+	</select>
+
+
+
+	<!-- 트레이너 정보 삭제  -->
+	<update id="tra1000DAO.deleteTra1000TrainerList" parameterClass="java.util.Map">
+		/* tra1000DAO.deleteTra1000TrainerList - 트레이너 정보 삭제  */
+		<![CDATA[
+		    UPDATE TRA1000
+	        SET
+	        	USE_YN = 'N',
+	        	DEL_YN = 'Y',
+	            MDF_DTM = DEFAULT,
+	            MDF_USR_ID = #metaId#,
+	            MDF_USR_IP = #metaIp#
+	        WHERE TRA_ID = #trainerId#
+        ]]>
+	</update>
+
+
+</sqlMap>

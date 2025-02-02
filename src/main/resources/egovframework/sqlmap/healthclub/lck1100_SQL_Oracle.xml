@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="lck1100DAO">
+	
+	<typeAlias  alias="searchVO" type="healthclub.com.vo.SearchVO"/>
+    <typeAlias  alias="egovMap"  type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+    
+    
+    <!-- 사물함 목록 수 -->
+    <select id="lck1100DAO.selectLck1100TotalCount" parameterClass="searchVO" resultClass="java.lang.Integer">
+	    /* lck1100DAO.selectLck1100TotalCount - 사물함 목록 수 */
+	    <![CDATA[
+		    SELECT
+	            COUNT(1) AS CNT
+	        FROM 
+	        	LCK1100 LCK
+	        JOIN 
+	        	USR1000 USR 
+	        ON 
+	        	LCK.USR_ID = USR.USR_ID 
+		    WHERE
+		    	1=1
+	    ]]>
+	    
+    	<isEqual property="searchKey" compareValue="lockerId">
+			<![CDATA[
+				AND LCK.LCK_ID LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+		
+		<isEqual property="searchKey" compareValue="userId">
+			<![CDATA[
+				AND LCK.USR_ID LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+		
+		<isEqual property="searchKey" compareValue="userName">
+			<![CDATA[
+				AND USR.USR_NM LIKE '%' || #searchValue# || '%'
+			]]>
+		</isEqual>
+		
+		<isEqual property="searchKey" compareValue="useCode">
+			<![CDATA[
+				AND LCK.LCK_CD = #searchValue#
+			]]>
+		</isEqual>
+		
+    </select>
+    
+    
+    <!-- 사물함 목록 정보 반환 -->
+	<select id="lck1100DAO.selectLck1100List" parameterClass="searchVO" resultClass="egovMap">
+	   	/* lck1100DAO.selectLck1100List - 사물함 목록 정보 반환 */
+	   <![CDATA[
+	 		SELECT
+	            	LCK.LCK_ID AS LOCKER_ID
+	            ,	LCK.USR_ID AS USER_ID
+	            ,	USR.USR_NM AS USER_NAME
+	            ,	LCK.LCK_HIS_DT AS LOCKER_EXPIRE_DATE
+	            ,	LCK.LCK_CD AS LOCKER_CODE
+	            ,	TO_CHAR(LCK.REG_DTM, 'YYYY-MM-DD') AS REGISTER_DATE
+	
+	        FROM 
+	        	LCK1100 LCK
+			JOIN 
+				USR1000 USR 
+	        ON 
+	        	LCK.USR_ID = USR.USR_ID 
+		    WHERE 
+		    	1=1
+	    ]]>
+	    
+	    	<isEqual property="searchKey" compareValue="lockerId">
+				<![CDATA[
+					AND LCK.LCK_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="userId">
+				<![CDATA[
+					AND LCK.USR_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="userName">
+				<![CDATA[
+					AND USR.USR_NM LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="useCode">
+				<![CDATA[
+					AND LCK.LCK_CD = #searchValue#
+				]]>
+			</isEqual>
+			<![CDATA[
+				ORDER BY REGISTER_DATE DESC
+				OFFSET #offsetStart# ROWS FETCH NEXT #recordSize# ROWS ONLY
+			]]>
+			
+	</select>
+	
+	
+</sqlMap>

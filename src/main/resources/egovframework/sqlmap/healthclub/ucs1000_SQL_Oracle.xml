@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ucs1000DAO">
+    
+	<resultMap id="userPtListInfo" class="java.util.HashMap">
+		<result property="ptId" column="PCS_ID"/>
+		<result property="ptStatus" column="PCS_STS_CD"/>
+		<result property="ptDate" column="PCS_DT"/>
+	</resultMap>
+    
+	<resultMap id="userPtDetailInfo" class="java.util.HashMap">
+		<result property="ptId" column="PCS_ID"/>
+		<result property="userId" column="USR_ID"/>
+		<result property="trainerId" column="TRA_ID"/>
+		<result property="ptCode" column="PCS_CD"/>
+		<result property="ptDate" column="PCS_DT"/>
+		<result property="ptStartTime" column="PCS_ST_TM"/>
+		<result property="ptStatus" column="PCS_STS_CD"/>
+		<result property="userPtRemainCount" column="CLS_NO"/>
+	</resultMap>
+	
+    
+    <!-- 개인 피티 목록 정보 반환 -->
+	<select id="ucs1000DAO.selectUcs1000PtList" resultMap="userPtListInfo">
+	   	/* ucs1000DAO.selectUcs1000PtList - 개인피티 목록 정보 반환 */
+	   	<![CDATA[
+		    SELECT
+		        	PCS.PCS_ID AS PCS_ID
+		        ,	PCS.PCS_STS_CD AS PCS_STS_CD
+		        ,	PCS.PCS_DT AS PCS_DT
+		    FROM 
+		    	PCS1000 PCS
+		    WHERE 
+		    	1=1
+		    	AND PCS.USR_ID = #userId#
+	    ]]>
+	</select>
+	
+	
+ 	<!-- 피티 상세 정보 반환 -->
+	<select id="ucs1000DAO.selectUcs1000DetailUserPtInfo" resultMap="userPtDetailInfo">
+	   	/* ucs1000DAO.selectUcs1000DetailUserPtInfo - 피티 목록 정보 반환 */
+	   	<![CDATA[
+	    SELECT
+	        	PCS.PCS_ID AS PCS_ID
+	        ,	PCS.USR_ID AS USR_ID
+	        ,	PCS.TRA_ID AS TRA_ID
+	        ,	PCS.PCS_CD AS PCS_CD
+	        ,	PCS.PCS_DT AS PCS_DT
+	        ,	PCS.PCS_ST_TM AS PCS_ST_TM
+	        ,	PCS.PCS_STS_CD AS PCS_STS_CD
+	        ,	USR.CLS_NO AS CLS_NO
+	    FROM 
+	    	PCS1000 PCS
+    	LEFT JOIN 
+    		USR1000 USR
+    	ON 
+    		PCS.USR_ID = USR.USR_ID 
+	    WHERE 
+	    	1=1
+	    	AND PCS.PCS_ID = #ptId#
+	    ]]>
+	</select>
+
+</sqlMap>

@@ -1,0 +1,547 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="usr1000DAO">
+	
+	<typeAlias  alias="userVO" type="healthclub.usr.usr1000.usr1000.service.Usr1000VO"/>
+	<typeAlias  alias="searchVO" type="healthclub.com.vo.SearchVO"/>
+	
+	<resultMap id="editUserInfo" class="java.util.HashMap">
+		<result property="userId" column="USR_ID"/>
+		<result property="userName" column="USR_NM"/>
+		<result property="userTel" column="USR_TELNO"/>
+		<result property="userGender" column="USR_GEN"/>
+		<result property="userAddress" column="USR_ADR"/>
+		<result property="userJoinDT" column="JOIN_DT"/>
+		<result property="userEndDT" column="ED_DT"/>
+		<result property="userClassNum" column="CLS_NO"/>
+		<result property="remainDay" column="REMAIN_DAY"/>
+		<result property="userNote" column="NOTE"/>
+		<result property="lockerId" column="LCK_ID"/>
+		<result property="lockerExpire" column="LCK_ED_DT"/>
+	</resultMap>
+	
+    <resultMap id="lockerInfo" class="java.util.HashMap">
+		<result property="lockerId" column="LCK_ID"/>
+		<result property="userId" column="USR_ID"/>
+		<result property="lockerExpire" column="LCK_ED_DT"/>
+		<result property="lockerStatus" column="STATUS"/>
+	</resultMap>
+	
+
+	<resultMap id="emptyLocker" class="java.util.HashMap">
+		<result property="lockerId" column="LCK_ID"/>
+		<result property="userId" column="USR_ID"/>
+		<result property="lockerExpire" column="LCK_ED_DT"/>
+	</resultMap>
+	
+	
+	<resultMap id="userLockerInfo" class="java.util.HashMap">
+		<result property="lockerId" column="LCK_ID"/>
+		<result property="userId" column="USR_ID"/>
+		<result property="lockerExpire" column="LCK_ED_DT"/>
+		<result property="endCode" column="STATUS"/>
+	</resultMap>
+    
+    <!-- 회원 목록 수 -->
+    <select id="usr1000DAO.selectUsr1000UserListTotalCount" parameterClass="searchVO" resultClass="java.lang.Integer">
+	    /* usr1000DAO.selectUsr1000UserListTotalCount - 회원 목록 수 */
+	    <![CDATA[
+		    SELECT
+		         COUNT(USR.USR_ID) AS CNT
+		    FROM 
+		    	USR1000 USR
+		    WHERE 
+		    	1=1
+    	]]>
+	    	<isEqual property="searchKey" compareValue="userId">
+				<![CDATA[
+					AND USR.USR_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual  property="searchKey" compareValue="userName">
+				<![CDATA[
+					AND USR.USR_NM LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual  property="searchKey" compareValue="userPhone">
+				<![CDATA[
+					AND USR.USR_TELNO LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual  property="searchKey" compareValue="classNum">
+				<![CDATA[
+					AND USR.CLS_NO = #searchValue#
+				]]>
+			</isEqual>
+			
+			<isEqual  property="searchKey" compareValue="deleteCode">
+				<![CDATA[
+					AND USR.DEL_YN = #searchValue#
+				]]>
+			</isEqual>
+			
+			<isEqual  property="searchKey" compareValue="userStatus">
+				<isEqual property="searchValue" compareValue="01">
+					<![CDATA[
+						AND TRUNC(TO_DATE(USR.ED_DT, 'YYYY-MM-DD')) - TRUNC(SYSDATE) > 5
+					]]>
+				</isEqual>
+				
+				<isEqual property="searchValue" compareValue="02">
+					<![CDATA[
+						AND TRUNC(TO_DATE(USR.ED_DT, 'YYYY-MM-DD')) - TRUNC(SYSDATE) BETWEEN 0 AND 5
+					]]>
+				</isEqual>
+				
+				<isEqual property="searchValue" compareValue="03">
+					<![CDATA[
+						AND TRUNC(TO_DATE(USR.ED_DT, 'YYYY-MM-DD')) - TRUNC(SYSDATE) < 0
+					]]>
+				</isEqual>
+				
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="issueCode">
+				<isEqual property="searchValue" compareValue="N">
+					<![CDATA[
+						AND USR.LCK_IS = '-'
+					]]>
+				</isEqual>
+				
+				<isEqual property="searchValue" compareValue="Y">
+					<![CDATA[
+						AND USR.LCK_IS <> '-'
+					]]>
+				</isEqual>
+			</isEqual>
+			
+    </select>
+    
+    
+    <!-- 회원 목록 정보 반환 -->
+	<select id="usr1000DAO.selectUsr1000UserInfoList" parameterClass="searchVO" resultClass="userVO">
+	   	/* usr1000DAO.selectUsr1000UserInfoList - 회원 목록 정보 반환 
+	   	   TRUNC() : MySQL 말고 다른 SQL에서 사용 가능
+	   	*/
+	   <![CDATA[
+		    SELECT
+		        	USR.USR_ID AS id
+		        , 	USR.USR_NM AS name
+		        , 	USR.USR_TELNO AS phone
+		        , 	USR.CLS_NO AS classNumber
+		        ,	USR.LCK_IS AS issue
+		        ,	USR.JOIN_DT AS joinDate
+		        ,	TRUNC(TO_DATE(USR.ED_DT, 'YYYY-MM-DD')) - TRUNC(SYSDATE) AS remainDay
+		    FROM 
+		    	USR1000 USR
+		    WHERE 
+		    	1=1
+	    	]]>
+	    	
+	    	<isEqual property="searchKey" compareValue="userId">
+				<![CDATA[
+					AND USR.USR_ID LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="userName">
+				<![CDATA[
+					AND USR.USR_NM LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="userPhone">
+				<![CDATA[
+					AND USR.USR_TELNO LIKE '%' || #searchValue# || '%'
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="classNum">
+				<![CDATA[
+					AND USR.CLS_NO = #searchValue#
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="deleteCode">
+				<![CDATA[
+					AND USR.DEL_YN = #searchValue#
+				]]>
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="userStatus">
+			
+				<isEqual property="searchValue" compareValue="01">
+					<![CDATA[ 
+						AND TRUNC(TO_DATE(USR.ED_DT, 'YYYY-MM-DD')) - TRUNC(SYSDATE) > 5 
+					]]>
+				</isEqual>
+				
+				<isEqual property="searchValue" compareValue="02">
+					<![CDATA[ 
+						AND TRUNC(TO_DATE(USR.ED_DT, 'YYYY-MM-DD')) - TRUNC(SYSDATE) BETWEEN 0 AND 5
+					]]>
+				</isEqual>
+				
+				<isEqual property="searchValue" compareValue="03">
+					<![CDATA[ 
+						AND TRUNC(TO_DATE(USR.ED_DT, 'YYYY-MM-DD')) - TRUNC(SYSDATE) < 0
+					]]>
+				</isEqual>
+				
+			</isEqual>
+			
+			<isEqual property="searchKey" compareValue="issueCode">
+				<isEqual property="searchValue" compareValue="N">
+					<![CDATA[
+						AND USR.LCK_IS = '-'
+					]]>
+				</isEqual>
+				
+				<isEqual property="searchValue" compareValue="Y">
+					<![CDATA[
+						AND USR.LCK_IS <> '-'
+					]]>
+				</isEqual>
+			</isEqual>
+			
+			<![CDATA[
+				ORDER BY
+						DEL_YN 
+					, 	REG_DTM DESC
+				OFFSET #offsetStart# ROWS FETCH NEXT #recordSize# ROWS ONLY
+			]]>
+			
+	</select>
+
+	
+	<!-- 수정할 회원 정보 반환 -->
+	<select id="usr1000DAO.selectUsr1000EditUserInfo" parameterClass="java.lang.String" resultMap="editUserInfo">
+	   	/* usr1000DAO.selectUsr1000EditUserInfo - 수정할 회원 정보 반환  */
+	    <![CDATA[
+		    SELECT
+		        	USR.USR_ID AS USR_ID
+		        ,	USR.USR_NM AS USR_NM
+		        ,	USR.USR_TELNO AS USR_TELNO
+		        ,	USR.USR_GEN AS USR_GEN
+		        ,	USR.USR_ADR AS USR_ADR
+		        ,	USR.JOIN_DT AS JOIN_DT
+		        ,	USR.ED_DT AS ED_DT
+		        ,	USR.CLS_NO AS CLS_NO
+		        ,	USR.NOTE AS NOTE
+		        ,	TRUNC(TO_DATE(USR.ED_DT, 'YYYY-MM-DD')) - TRUNC(SYSDATE) AS REMAIN_DAY
+		        ,	LCK.LCK_ID AS LCK_ID
+		        ,	LCK.LCK_ED_DT AS LCK_ED_DT
+		    FROM
+		        USR1000 USR
+		    LEFT JOIN
+		        LCK1000 LCK 
+		    ON 
+		    	USR.USR_ID = LCK.USR_ID
+		        AND LCK.LCK_ED_DT >= TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+		    WHERE 1=1
+		        AND USR.USR_ID = #userId#
+		]]>
+	</select>
+	
+	
+	<!-- 회원 정보 등록 -->
+	<insert id="usr1000DAO.insertUsr1000UserInfo" parameterClass="java.util.Map">
+	   	/* usr1000DAO.insertUsr1000UserInfo - 회원 정보 등록  */
+	    <![CDATA[
+		    INSERT INTO USR1000 (
+		        USR_ID,
+		        USR_PW,
+		        USR_NM,
+		        USR_GEN,
+		        USR_TELNO,
+		        USR_ADR,
+		        JOIN_DT,
+		        ED_DT,
+		        CLS_NO,
+		        NOTE,
+		        REG_USR_ID,
+		        REG_USR_IP,
+		        MDF_USR_ID,
+		        MDF_USR_IP
+		    ) 
+		    VALUES (
+		        #userId#,
+		        #userPw#,
+		        #userName#,
+		        #gender#,
+		        #userPhone#,
+		        COALESCE(#userAddress#, '-'),
+		        #userJoin#,
+		        #userExpire#,
+		        COALESCE(#userClassNum#, '0'),
+		        COALESCE(#remark#, '-'),
+		        #metaId#,
+		        #metaIp#,
+		        #metaId#,
+		        #metaIp#
+		    )
+	    ]]>
+	</insert>
+	
+	
+	<!-- 회원 정보 수정 -->
+	<update id="usr1000DAO.updateUsr1000UserInfo" parameterClass="java.util.Map">
+		/* usr1000DAO.updateUsr1000UserInfo - 회원 정보 수정  */
+		<![CDATA[
+		    UPDATE USR1000
+	        SET
+	            USR_PW = COALESCE(#userPw#, USR_PW),
+	            USR_NM = #userName#,
+	            USR_GEN = #gender#,
+	            USR_TELNO = #userPhone#,
+	            USR_ADR = COALESCE(#userAddress#, '-'),
+	            JOIN_DT = #userJoin#,
+	            ED_DT = #userExpire#,
+	            CLS_NO = #userClassNum#,
+	            LCK_IS = COALESCE(#lockerIssue#, LCK_IS),
+	            NOTE = COALESCE(#remark#, '-'),
+	            MDF_DTM = DEFAULT,
+	            MDF_USR_ID = #metaId#,
+	            MDF_USR_IP = #metaIp#
+	        WHERE USR_ID = #userId#
+        ]]>
+	</update>
+
+
+	<!-- 단일 사물함 정보 반환  -->
+	<select id="usr1000DAO.selectLck1000LockerInfo" parameterClass="java.lang.String" resultMap="lockerInfo">
+		/* usr1000DAO.selectLck1000LockerInfo - 단일 사물함 정보 반환  */
+		<![CDATA[
+			SELECT 
+			    	LCK.LCK_ID AS LCK_ID
+			    ,	LCK.USR_ID AS USR_ID
+			    ,	LCK.LCK_ED_DT AS LCK_ED_DT
+			    ,   CASE
+			            WHEN LCK.LCK_ED_DT IS NULL THEN 'empty'
+			            WHEN LCK.LCK_ED_DT < TO_CHAR(SYSDATE, 'YYYY-MM-DD') THEN 'empty'
+			            ELSE 'used'
+			        END AS STATUS
+			FROM 
+				LCK1000 LCK
+			WHERE 
+				1=1 
+				AND LCK.LCK_ID = #lockerId#
+		]]>
+	</select>
+	
+	
+	 <!-- 사물함 이력 등록 -->
+	<insert id="usr1000DAO.insertLck1100LockerInfo" parameterClass="java.util.Map">
+		/* usr1000DAO.insertLck1100LockerInfo - 사물함 이력 등록 */
+	    <![CDATA[
+			 INSERT INTO LCK1100 LCK
+			  (
+			    LCK.LCK_HIS_ID,
+			    LCK.LCK_ID,
+			    LCK.USR_ID,
+			    LCK.LCK_HIS_DT,
+			    LCK.LCK_CD,
+			    LCK.REG_USR_ID,
+			    LCK.REG_USR_IP,
+			    LCK.MDF_USR_ID,
+			    LCK.MDF_USR_IP
+			  )
+			  VALUES
+			  (
+			    TO_CHAR(SYSDATE, 'YYYYMMDD') || LCK1100_SEQ.NEXTVAL,
+			    #lockerId#,
+			    #userId#,
+			    #lockerExpire#,
+			    #endCode#,
+			    #metaId#,
+			    #metaIp#,
+			    #metaId#,
+			    #metaIp#
+			  )
+		  ]]>
+	</insert>
+	
+	
+	
+		
+	 <!-- 사물함 정보 수정 -->
+	<update id="usr1000DAO.updateLck1000LockerInfo" parameterClass="java.util.Map">
+		/* usr1000DAO.updateLck1000LockerInfo - 사물함 정보 수정 */
+ 		<![CDATA[
+		  	UPDATE 
+		  		LCK1000 LCK
+		 	SET
+		    	LCK.USR_ID = #userId#
+		    	,	LCK.LCK_ED_DT = #lockerExpire#
+		    	,	LCK.MDF_USR_ID = #metaId#
+		    	,	LCK.MDF_USR_IP = #metaIp#
+		  	WHERE 
+		  		1=1
+		    	AND LCK_ID = #lockerId#
+    	]]>
+	</update>
+	
+	
+	<!-- 비어있거나 만료된 사물함 정보 반환 -->
+	<select id="usr1000DAO.selectLck1000EmptyLocker"  resultMap="emptyLocker">
+		/* usr1000DAO.selectLck1000EmptyLocker - 비어있거나 만료된 사물함 정보 반환 */
+		<![CDATA[
+		  	SELECT 
+		  			LCK.LCK_ID AS LCK_ID
+				,	LCK.USR_ID AS USR_ID
+				,	LCK.LCK_ED_DT AS LCK_ED_DT
+		  		
+			FROM (
+					SELECT
+							ILCK.LCK_ID
+						,	ILCK.USR_ID
+						,	ILCK.LCK_ED_DT
+				    FROM LCK1000 ILCK
+				    WHERE 
+				    	1=1 
+				    	AND (ILCK.LCK_ED_DT IS NULL 
+				    		OR 
+				    		ILCK.LCK_ED_DT > TO_CHAR(SYSDATE, 'yyyy-mm-dd')
+				    		)
+				    ORDER BY ILCK.LCK_ED_DT DESC
+			  	  ) LCK
+			WHERE 
+				1=1 
+				AND ROWNUM <= 1
+		]]>
+	</select>
+
+
+	 <!-- 사물함 탈취 이력 발생 회원 사물함 탈취 정보 업데이트  -->
+	<update id="usr1000DAO.updateUsr1000LockerIssue" parameterClass="java.util.Map">
+		/* usr1000DAO.updateUsr1000LockerIssue - 사물함 탈취 이력 발생 회원 사물함 탈취 정보 업데이트 */
+ 		<![CDATA[
+ 		UPDATE USR1000
+        SET 
+        	LCK_IS = #lockerIssue#,
+            MDF_DTM = DEFAULT,
+            MDF_USR_ID = #metaId#,
+            MDF_USR_IP = #metaIp#
+        WHERE 
+        	1=1
+        	AND USR_ID = #userId#
+        ]]>
+	</update>
+
+
+	<!-- 기존 사물함 정보 삭제  -->
+	<update id="usr1000DAO.deleteLck1000LockerInfo" parameterClass="java.util.Map">
+		/* usr1000DAO.deleteLck1000LockerInfo - 기존 사물함 정보 삭제 */
+ 		<![CDATA[
+	 		UPDATE 
+	 			LCK1000 
+	        SET 
+	        	USR_ID = NULL,
+	            LCK_ED_DT = NULL,
+	            MDF_USR_ID = #metaId#,
+	            MDF_USR_IP = #metaIp#
+	        WHERE 
+	        	1=1
+	        	AND USR_ID = #userId#
+        ]]>
+	</update>
+
+
+	<!-- 삭제 불가능한 회원 찾기 -->
+	<select id="usr1000DAO.selectUsr1000HavePt" parameterClass="java.util.List" resultClass="java.lang.String">
+	   	/* "usr1000DAO.selectUsr1000HavePt - 삭제 불가능한 회원 찾기  */
+ 		<![CDATA[
+		    SELECT
+		        DISTINCT USR.USR_ID AS USR_ID
+		    FROM
+		        USR1000 USR
+		    LEFT JOIN
+	      		PCS1000 PCS
+		    ON
+		      	PCS.USR_ID = USR.USR_ID
+		    WHERE 
+		    	1=1
+		        AND USR.USR_ID
+		]]>
+			<iterate prepend="IN" open="(" close=")" conjunction=",">
+     				<![CDATA[
+     					#[]#
+    				]]>
+     		</iterate> 
+			<![CDATA[
+				AND PCS.PCS_STS_CD = '00'
+			]]>
+	</select>
+
+
+	<!-- 삭제 불가능한 회원 찾기 -->
+	<select id="usr1000DAO.selectUsr1000UserListRemainPt" parameterClass="java.util.List" resultClass="java.lang.String">
+	   	/* "usr1000DAO.selectUsr1000UserListRemainPt - 삭제 불가능한 회원 찾기  */
+ 		<![CDATA[
+		    SELECT
+		        DISTINCT USR.USR_ID AS USR_ID
+		    FROM
+		        USR1000 USR
+		    WHERE 
+		    	1=1
+		        AND USR.USR_ID
+		]]>
+			<iterate prepend="IN" open="(" close=")" conjunction=",">
+     				<![CDATA[
+     					#[]#
+    				]]>
+     		</iterate> 
+			<![CDATA[
+				AND TO_NUMBER(USR.CLS_NO) > 0
+			]]>
+	</select>
+
+
+	<!-- 유저 정보 삭제  -->
+	<update id="usr1000DAO.deleteUsr1000UserList" parameterClass="java.util.Map">
+		/* usr1000DAO.deleteUsr1000UserList - 유저 정보 삭제  */
+		<![CDATA[
+		    UPDATE 
+		    	USR1000
+	        SET
+	        	USE_YN = 'N',
+	        	DEL_YN = 'Y',
+	        	LCK_IS = '-',
+	        	CLS_NO = '0',
+	            MDF_DTM = DEFAULT,
+	            MDF_USR_ID = #metaId#,
+	            MDF_USR_IP = #metaIp#
+	        WHERE 
+	        	1=1 
+	        	AND USR_ID = #userId#
+        ]]>
+	</update>
+	
+	
+	<!-- 회원 중 사물함 정보를 가진 회원 정보 반환-->
+	<select id="usr1000DAO.selectUsr1000UserLockerList" parameterClass="java.util.List" resultMap="userLockerInfo">
+	   	/* "usr1000DAO.selectUsr1000UserLockerList - 회원 중 사물함 정보를 가진 회원 정보 반환  */
+	    <![CDATA[
+   		SELECT 
+		    	LCK.LCK_ID AS LCK_ID
+		    ,	LCK.USR_ID AS USR_ID
+		    ,	LCK.LCK_ED_DT AS LCK_ED_DT
+		    ,	'03' AS STATUS
+		FROM 
+			LCK1000 LCK
+		WHERE 
+			1=1 
+			AND LCK.USR_ID
+		]]>
+        <iterate prepend="IN" open="(" close=")" conjunction=",">
+			<![CDATA[
+				#[]#
+			]]>
+     	</iterate> 
+	</select>
+
+</sqlMap>

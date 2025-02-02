@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+    	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+
+	<!-- TransactionManager : 트랜잭션의 시작, commit, rollback을 추상화한 인터페이스 를 구현한 클래스를 bean으로 등록 -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- TransactionManager는 datasource 정보가 필수로 요구 : context-datasource 파일의 datasource 빈을 참조할 것 -->
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+
+
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+
+		<!-- tx 세부 속성 설정 처리 -->
+		<tx:attributes>
+			<!-- insert, update, delete, save, select, get으로 시작되는 메서드는 transaction 처리
+			     Exception 발생 시 rollback
+				 조회 하는 select, get 형태의 메서드의 경우 조회 과정 중 50초를 초과하면 조회 실패로 간주하고 롤백처리 -->
+			<tx:method name="insert*" rollback-for="Exception"/>
+			<tx:method name="update*" rollback-for="Exception"/>
+			<tx:method name="delete*" rollback-for="Exception"/>
+			<tx:method name="save*"   rollback-for="Exception"/>
+ 			<tx:method name="select*" rollback-for="Exception" timeout="50"/>
+		</tx:attributes>
+
+	</tx:advice>
+
+
+	<!-- transaction은 너무 중요해서 해당 부분에 특화된 aop가 존재. 이외 aop는 상황에 맞춰 커스텀 해서 사용하는 일반 aop-->
+	<aop:config>
+	
+		<!-- * : 모든 경로  | egovframework.example.sample : 이런 패키지 안의 | ..impl : 사이에 어떤 경로가 있던 impl이란 패키지 내부에 | *Impl : 이런 이름의 모든 파일 | *(..) : 모든 메서드에 적용-->
+		<aop:pointcut id="requiredTx" expression="execution(* healthclub..impl.*Impl.*(..))"/>
+		
+		<!-- advice-ref   : 트렌잭션 수행 advice   * advice : 특정한 시점에 실행되는 코드 조각 - Before advice(tx 전), After returning advice(tx 성공 후 처리), After throwing advice(tx 예외발생 후 처리)
+			 pointcut-ref :  AOP에서 어떤 메서드가 어드바이스를 적용받을지를 결정하는 일종의 필터 역할 -->
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="requiredTx" />
+		
+	</aop:config>
+
+</beans>

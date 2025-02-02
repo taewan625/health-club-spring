@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       					http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<!-- 객체 라이프 사이클 관리, controller 제외하고 service, repository 객체(=bean) 관리
+	     base-package : 스캔 시작 경로 지정  -->
+    <context:component-scan base-package="healthclub">
+		<!-- exclude-filter: 제외할 빈 설정 stereotype : 고정된, 일반적인 패턴  -->
+       	<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+       	<!-- 추가 설정 종류 
+       		    use-default="false"는 기본 어노테이션 @Controller, @Component @Service등을 스캔하지 않음.
+       	    	include-filter은 기본 어노테이션을 스캔하지 않는다고 설정 후 include-filter를 통해서 특정 어노테이션만 스캔 -->
+    </context:component-scan>
+
+	<!-- globals.properties 전역으로 추가 -->
+	<context:property-placeholder location="classpath:/egovProps/globals.properties" />
+
+	<!-- 다국어 처리 : context-crypto.xml에서 사용하는 messageSource와 겹쳐서 bean id 변경-->
+	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="useCodeAsDefaultMessage">
+			<value>true</value>
+		</property>
+		
+		<property name="basenames">
+			<list>
+				<!-- message properties 내용  -->
+				<value>classpath:/egovframework/message/message-common</value>
+				<value>classpath:/egovframework/message/url-path</value>
+				<value>classpath:/egovframework/egovProps/globals</value>
+			</list>
+		</property>
+		
+		<!-- 리소스 번들 파일의 캐시를 얼마나 오래 유지할지를 지정   60초로 설정  메시지 소스가 변경되었을 때 최대 60초까지 이전 캐시된 메시지를 사용하고, 이후에는 변경된 메시지를 적용 -->
+		<property name="cacheSeconds">
+			<value>60</value>
+		</property>
+	</bean>
+    
+    
+    
+	<!-- LeaveaTrace : exception을 던지지 않고 Exception 후처리 로직처럼 수행 후 계속 비즈니스로 돌아오는 방법.
+					   AOP를 이용하는 구조는 아니고 Exception 을 발생하지도 않는다. 단지 후처리 로직을 실행하도록 하고자 함에 목적
+					   LeaveaTrace 는 Exeption 발생시 Exception을 발생하지 않으면서 후처리(Handler) 로직에 들어간다. bean 설정만 되어있으면 호출하여 사용 가능
+		  LeaveaTrace ⇒ TraceHandlerService ⇒ Handler 순으로 실행 
+		  
+		  EgovAbstractServiceImpl 를 상속받은 경우 leavaTrace(메세지키) 형태로 실행을 하면 설정에 등록된 후처리 로직을 실행한다.
+ 		  * 그리고 나서 원래 로직으로 돌아와 나머지 수행
+		  -->
+	<bean id="leaveaTrace" class="egovframework.rte.fdl.cmmn.trace.LeaveaTrace">
+		<!-- traceHandlerServices 실행하고자 하는 Handler를 가진 Manager서비스 리스트를 등록 -->
+		<property name="traceHandlerServices">
+			<list>
+				<ref bean="traceHandlerService" />
+			</list>
+		</property>
+	</bean>
+
+
+	<!-- DefaultTraceHandleManager 클래스 : 실행하고자 하는 Handler를 가진 Manager서비스 
+										  AbsTraceHandleManager 를 상속받고 TraceHandlerService 를 구현한 real TraceHandleManager 클래스
+										   실제 수행 메소드들은 거의 AbsTraceHandleManager 에서 정의 되어 있으며, trace 메소드만 재정의하여 사용할 수 있다.-->
+	<bean id="traceHandlerService" class="egovframework.rte.fdl.cmmn.trace.manager.DefaultTraceHandleManager">
+		<!-- Ant 경로 패턴 설정 적용. DefaultTraceHandleManager가 상속받는 TraceHandlerService에서 적용하는 패턴을 antPathMater으로 설정  -->
+		<property name="reqExpMatcher">
+			<ref bean="antPathMater" />
+		</property>
+		
+		<!-- Ant 경로 패턴 중 * 패턴일 경우 동작함을 의미 -->
+		<property name="patterns">
+			<list>
+				<value>*</value>
+			</list>
+		</property>
+		
+		<!-- 실제로 수행되는 핸들러로 defaultTraceHandler를 참조받고 있다. 해당 클래스는 TraceHandler를 상속 받는 클래스이다. -->
+		<property name="handlers">
+			<list>
+				<ref bean="defaultTraceHandler" />
+			</list>
+		</property>
+	</bean>
+	
+	
+	<!-- AntPathMatcher 클래스는 특정 경로가 ant 경로 패턴이 일치하는지 확인할 때 사용한다. id가 antPathMater인 bean으로 등록 
+		 Ant 경로 패턴은 경로를 지정할 때 유용하게 사용할 수 있는 경로 표현 패턴인데, 스프링은 특정 경로가 Ant 경로 패턴 경로와 일치하는지 여부를 확인할 때 사용할 수 있는 클래스를 제공-->
+	<bean id="antPathMater" class="org.springframework.util.AntPathMatcher"/>
+	<!-- DefaultTraceHandler 클래스는 DefaultTraceHandleManager 클래스에서 property태그에서 참조하고 있고  id가 defaultTraceHandler인 bean으로 등록 -->
+	<bean id="defaultTraceHandler" class="egovframework.rte.fdl.cmmn.trace.handler.DefaultTraceHandler"/>
+</beans>
